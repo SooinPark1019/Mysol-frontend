@@ -46,7 +46,7 @@ export default function LoginPage() {
           </button>
         </form>
         <p className="text-center text-gray-300 mt-4">
-          Don't have an account? <Link href="/signup" className="text-blue-400 hover:underline">Sign Up</Link>
+          계정이 없으신가요? <Link href="/signup" className="text-blue-400 hover:underline">Sign Up</Link>
         </p>
       </div>
     </div>
