@@ -111,7 +111,7 @@ export default function SignupPage() {
           </button>
         </form>
         <p className="text-center text-gray-300 mt-4">
-          Already have an account? <Link href="/login" className="text-blue-400 hover:underline">Login</Link>
+          이미 계정이 있으시다면? <Link href="/login" className="text-blue-400 hover:underline">Login</Link>
         </p>
       </div>
     </div>
