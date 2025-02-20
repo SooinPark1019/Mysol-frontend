@@ -16,14 +16,14 @@ export default function SignupPage() {
     e.preventDefault();
     setError("");
     setSuccess("");
-
+  
     if (password !== confirmPassword) {
       setError("Passwords do not match!");
       return;
     }
-
+  
     setLoading(true);
-
+  
     try {
       const response = await fetch("http://localhost:8000/signup", {
         method: "POST",
@@ -32,20 +32,24 @@ export default function SignupPage() {
         },
         body: JSON.stringify({ username, email, password }),
       });
-
+  
       const data = await response.json();
-
+  
       if (!response.ok) {
         throw new Error(data.detail || "Signup failed");
       }
-
+  
       setSuccess("User registered successfully!");
       setUsername("");
       setEmail("");
       setPassword("");
       setConfirmPassword("");
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unknown error occurred");
+      }
     } finally {
       setLoading(false);
     }
