@@ -57,7 +57,7 @@ export default function SignupPage() {
 
   return (
     <div className="bg-gray-900 text-white min-h-screen flex justify-center items-center p-5">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
+      <div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full mt-20">
         <h2 className="text-3xl font-bold text-gray-300 text-center mb-4">Sign Up</h2>
         {error && <p className="text-red-500 text-center">{error}</p>}
         {success && <p className="text-green-500 text-center">{success}</p>}
@@ -116,4 +116,5 @@ export default function SignupPage() {
       </div>
     </div>
   );
+  
 }
