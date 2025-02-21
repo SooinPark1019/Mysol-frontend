@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function SignupPage() {
   const [username, setUsername] = useState("");
@@ -12,46 +13,63 @@ export default function SignupPage() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const router = useRouter();
+
+  // ✅ 에러 처리 함수
+  const handleError = (message: string) => {
+    setError(message);
+    setLoading(false);
+  };
+
+  // ✅ 성공 처리 함수
+  const handleSuccess = () => {
+    setSuccess("User registered successfully!");
+    setUsername("");
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+
+    // 2초 후 로그인 페이지로 이동
+    setTimeout(() => {
+      router.push("/login");
+    }, 2000);
+  };
+
+  // ✅ 회원가입 요청 처리 함수
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess("");
-  
+
     if (password !== confirmPassword) {
-      setError("Passwords do not match!");
+      handleError("Passwords do not match!");
       return;
     }
-  
+
     setLoading(true);
-  
+
     try {
-      const response = await fetch("http://localhost:8000/signup", {
+      const response = await fetch("https://api.editorialhub.site/api/users/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ email, username, password }),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
         throw new Error(data.detail || "Signup failed");
       }
-  
-      setSuccess("User registered successfully!");
-      setUsername("");
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
+
+      handleSuccess();
     } catch (error: unknown) {
       if (error instanceof Error) {
-        setError(error.message);
+        handleError(error.message);
       } else {
-        setError("An unknown error occurred");
+        handleError("An unknown error occurred");
       }
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -59,9 +77,13 @@ export default function SignupPage() {
     <div className="bg-gray-900 text-white min-h-screen flex justify-center items-center p-5">
       <div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full mt-20">
         <h2 className="text-3xl font-bold text-gray-300 text-center mb-4">Sign Up</h2>
+
+        {/* ✅ 에러 및 성공 메시지 출력 */}
         {error && <p className="text-red-500 text-center">{error}</p>}
         {success && <p className="text-green-500 text-center">{success}</p>}
+
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* ✅ 유저네임 입력 */}
           <label className="text-gray-300">
             Username
             <input
@@ -72,6 +94,8 @@ export default function SignupPage() {
               required
             />
           </label>
+
+          {/* ✅ 이메일 입력 */}
           <label className="text-gray-300">
             Email
             <input
@@ -82,6 +106,8 @@ export default function SignupPage() {
               required
             />
           </label>
+
+          {/* ✅ 비밀번호 입력 */}
           <label className="text-gray-300">
             Password
             <input
@@ -92,6 +118,8 @@ export default function SignupPage() {
               required
             />
           </label>
+
+          {/* ✅ 비밀번호 확인 입력 */}
           <label className="text-gray-300">
             Confirm Password
             <input
@@ -102,19 +130,27 @@ export default function SignupPage() {
               required
             />
           </label>
+
+          {/* ✅ 제출 버튼 + 로딩 스피너 */}
           <button
             type="submit"
-            className="bg-blue-500 hover:bg-blue-600 transition px-6 py-3 rounded-full text-white font-semibold mt-2"
+            className="bg-blue-500 hover:bg-blue-600 transition px-6 py-3 rounded-full text-white font-semibold mt-2 flex items-center justify-center"
             disabled={loading}
           >
-            {loading ? "Signing Up..." : "Sign Up"}
+            {loading ? (
+              <span className="loader"></span>
+            ) : (
+              "Sign Up"
+            )}
           </button>
         </form>
+
+        {/* ✅ 로그인 링크 */}
         <p className="text-center text-gray-300 mt-4">
-          이미 계정이 있으시다면? <Link href="/login" className="text-blue-400 hover:underline">Login</Link>
+          이미 계정이 있으신가요?{" "}
+          <Link href="/login" className="text-blue-400 hover:underline">Login</Link>
         </p>
       </div>
     </div>
   );
-  
 }
