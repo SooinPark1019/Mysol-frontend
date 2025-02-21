@@ -9,25 +9,26 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<string[]>([]); // 에러 메시지를 배열로 관리
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
 
-  // ✅ 에러 처리 함수
+  // ✅ 에러 처리 함수 (배열에 추가)
   const handleError = (message: string) => {
-    setError(message);
+    setErrors((prevErrors) => [...prevErrors, message]);
     setLoading(false);
   };
 
   // ✅ 성공 처리 함수
   const handleSuccess = () => {
-    setSuccess("User registered successfully!");
+    setSuccess("회원가입이 성공적으로 완료되었습니다");
     setUsername("");
     setEmail("");
     setPassword("");
     setConfirmPassword("");
+    setErrors([]); // 에러 초기화
 
     // 2초 후 로그인 페이지로 이동
     setTimeout(() => {
@@ -38,11 +39,12 @@ export default function SignupPage() {
   // ✅ 회원가입 요청 처리 함수
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setErrors([]);
     setSuccess("");
 
+    // 비밀번호 확인
     if (password !== confirmPassword) {
-      handleError("Passwords do not match!");
+      handleError("비밀번호가 일치하지 않습니다");
       return;
     }
 
@@ -60,7 +62,7 @@ export default function SignupPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.detail || "Signup failed");
+        throw new Error(data.detail || "회원가입에 실패했습니다");
       }
 
       handleSuccess();
@@ -68,7 +70,7 @@ export default function SignupPage() {
       if (error instanceof Error) {
         handleError(error.message);
       } else {
-        handleError("An unknown error occurred");
+        handleError("알 수 없는 오류가 발생했습니다");
       }
     }
   };
@@ -78,9 +80,19 @@ export default function SignupPage() {
       <div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full mt-20">
         <h2 className="text-3xl font-bold text-gray-300 text-center mb-4">Sign Up</h2>
 
-        {/* ✅ 에러 및 성공 메시지 출력 */}
-        {error && <p className="text-red-500 text-center">{error}</p>}
-        {success && <p className="text-green-500 text-center">{success}</p>}
+        {/* ✅ 에러 및 성공 메시지 출력 (모든 메시지 고정 위치에 출력) */}
+        {errors.length > 0 && (
+          <div className="mb-4 bg-red-500 text-white p-3 rounded">
+            {errors.map((error, index) => (
+              <p key={index}>{error}</p>
+            ))}
+          </div>
+        )}
+        {success && (
+          <div className="mb-4 bg-green-500 text-white p-3 rounded text-center">
+            {success}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* ✅ 유저네임 입력 */}
