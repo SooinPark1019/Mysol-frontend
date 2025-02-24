@@ -1,4 +1,3 @@
-// select.tsx
 import React, { useState } from "react";
 
 interface SelectProps {
@@ -10,6 +9,7 @@ interface SelectProps {
 interface SelectItemProps {
   value: string;
   children: React.ReactNode;
+  onSelect: (value: string) => void; // ✅ 명시적으로 onSelect 정의
 }
 
 export const Select: React.FC<SelectProps> = ({ value, onValueChange, children }) => {
@@ -25,20 +25,27 @@ export const Select: React.FC<SelectProps> = ({ value, onValueChange, children }
       </button>
       {isOpen && (
         <div className="absolute mt-1 w-full bg-white shadow-lg rounded z-10">
-          {children}
+          {React.Children.map(children, (child) => {
+            if (React.isValidElement(child)) {
+              return React.cloneElement(child as React.ReactElement<SelectItemProps>, {
+                onSelect: (selectedValue: string) => {
+                  onValueChange(selectedValue);
+                  setIsOpen(false);
+                }
+              });
+            }
+            return child;
+          })}
         </div>
       )}
     </div>
   );
 };
 
-export const SelectItem: React.FC<SelectItemProps> = ({ value, children }) => {
+export const SelectItem: React.FC<SelectItemProps> = ({ value, children, onSelect }) => {
   return (
     <div
-      onClick={() => {
-        const event = new CustomEvent("selectChange", { detail: value });
-        window.dispatchEvent(event);
-      }}
+      onClick={() => onSelect(value)} // ✅ 직접 함수 호출
       className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
     >
       {children}
@@ -46,10 +53,11 @@ export const SelectItem: React.FC<SelectItemProps> = ({ value, children }) => {
   );
 };
 
-// 이벤트 리스너 등록
+// ✅ 명시적으로 타입 단언하여 이벤트 리스너 등록
 if (typeof window !== "undefined") {
-  window.addEventListener("selectChange", (e: any) => {
-    const selectedValue = e.detail;
+  window.addEventListener("selectChange", (e) => {
+    const customEvent = e as CustomEvent<string>;
+    const selectedValue = customEvent.detail;
     console.log("Selected Value:", selectedValue);
   });
 }
