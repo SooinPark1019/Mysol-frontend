@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useUser } from "../context/userContext";
 
 export default function Header() {
-  
+
   return (
     <header className="fixed top-0 left-0 w-full p-5 flex justify-between items-center bg-gray-800 shadow-md z-50">
       {/* 로고 + 문제 평가하기 + 검색 아이콘을 한 줄에 배치 */}
