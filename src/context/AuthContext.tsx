@@ -2,7 +2,9 @@
 
 import { createContext, useState, useEffect, useContext, useCallback } from "react";
 
-// 인증 상태 타입
+// ✅ 기본 API URL 설정
+const BASE_API_URL = "https://api.editorialhub.site";
+
 interface AuthContextType {
   isLoggedIn: boolean;
   username: string;
@@ -20,7 +22,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // ✅ 로그아웃 함수 (useCallback으로 관리)
   const logout = useCallback(async () => {
     try {
-      const response = await fetch("/api/logout", {
+      const response = await fetch(`${BASE_API_URL}/api/users/logout`, {
         method: "POST",
         credentials: "include",
       });
@@ -40,7 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // ✅ 자동으로 토큰을 갱신하는 fetch 함수 (서버 에러 메시지 처리)
   const fetchWithAuth = useCallback(
     async (url: string, options: RequestInit = {}) => {
-      const response = await fetch(url, {
+      const response = await fetch(`${BASE_API_URL}${url}`, {
         ...options,
         credentials: "include", // ✅ 쿠키 포함 요청
       });
@@ -48,7 +50,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!response.ok) {
         if (response.status === 401) {
           // 🔄 Access Token이 만료된 경우, 자동으로 refresh 시도
-          const refreshResponse = await fetch("/api/refresh", {
+          const refreshResponse = await fetch(`${BASE_API_URL}/api/users/refresh`, {
             method: "POST",
             credentials: "include",
           });
@@ -61,7 +63,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
 
           // ✅ 새 Access Token이 발급되었으므로 원래 요청을 다시 실행
-          return fetch(url, {
+          return fetch(`${BASE_API_URL}${url}`, {
             ...options,
             credentials: "include",
           });
@@ -81,7 +83,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const refreshResponse = await fetch("/api/refresh", {
+        const refreshResponse = await fetch(`${BASE_API_URL}/api/users/refresh`, {
           method: "POST",
           credentials: "include",
         });
@@ -93,7 +95,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        const response = await fetchWithAuth("/api/me", {
+        const response = await fetchWithAuth("/api/users/me", {
           method: "GET",
         });
 
@@ -114,7 +116,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // ✅ 로그인 요청 (서버 에러 메시지 처리)
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch("/api/signin", {
+      const response = await fetch(`${BASE_API_URL}/api/users/signin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include", // ✅ 쿠키 포함 요청
@@ -125,7 +127,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!response.ok) throw new Error(data.detail || "로그인 실패!");
 
       // ✅ 로그인 성공 후, 사용자 정보 가져오기
-      const profileResponse = await fetchWithAuth("/api/me", {
+      const profileResponse = await fetchWithAuth("/api/users/me", {
         method: "GET",
       });
 
