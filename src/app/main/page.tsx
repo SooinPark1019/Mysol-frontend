@@ -25,7 +25,7 @@ export default function MainPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        // API 응답에 message가 있으면 해당 메시지를 출력
+        // API 응답에 detail이 있으면 해당 메시지를 출력
         throw new Error(data.detail || "로그인 실패! 이메일 또는 비밀번호를 확인해주세요.");
       }
 
@@ -36,9 +36,13 @@ export default function MainPage() {
       // 상태 업데이트
       setUsername(data.username);
       setIsLoggedIn(true);
-    } catch (err: any) {
-      setError(err.message);
-    }
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("알 수 없는 오류가 발생했습니다.");
+        }
+      }
   };
 
   return (

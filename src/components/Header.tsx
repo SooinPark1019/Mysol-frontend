@@ -4,15 +4,7 @@ import Link from "next/link";
 import { useUser } from "../context/userContext";
 
 export default function Header() {
-  const { username, setUsername } = useUser();
-
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("username");
-    setUsername(null); // 전역 상태 초기화
-  };
-
+  
   return (
     <header className="fixed top-0 left-0 w-full p-5 flex justify-between items-center bg-gray-800 shadow-md z-50">
       {/* 로고 + 문제 평가하기 + 검색 아이콘을 한 줄에 배치 */}
