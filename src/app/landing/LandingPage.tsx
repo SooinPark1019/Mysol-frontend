@@ -65,7 +65,7 @@ export default function LandingPage() {
         <h2 className="text-3xl font-bold">지금 시작해보세요</h2>
         <p className="text-gray-300 mt-2">지금 가입하고 문제 해결 능력을 향상시키세요.</p>
         <button 
-          onClick={() => router.push("/login")} 
+          onClick={() => router.push("/main")} 
           className="mt-5 inline-block bg-blue-500 px-6 py-3 rounded-full text-white font-semibold hover:bg-blue-600 transition"
         >
           시작하기
@@ -79,7 +79,7 @@ export default function LandingPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="fixed bottom-5 right-5 bg-blue-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-600 transition cursor-pointer"
-          onClick={() => router.push("/login")}
+          onClick={() => router.push("/main")}
         >
           시작하기
         </motion.div>
