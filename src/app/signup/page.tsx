@@ -160,7 +160,7 @@ export default function SignupPage() {
         {/* ✅ 로그인 링크 */}
         <p className="text-center text-gray-300 mt-4">
           이미 계정이 있으신가요?{" "}
-          <Link href="/login" className="text-blue-400 hover:underline">Login</Link>
+          <Link href="/main" className="text-blue-400 hover:underline">Login</Link>
         </p>
       </div>
     </div>
