@@ -2,14 +2,14 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { FileText, Folder, MessageCircle } from "lucide-react";
+import { FileText, Folder, MessageCircle, LayoutDashboard } from "lucide-react";
 import Card from "./ui/card";
 
 const Sidebar = () => {
   const pathname = usePathname();
 
   const menuItems = [
-    { name: "블로그 관리", icon: <FileText size={20} />, path: "/blogmanage" },
+    { name: "블로그 관리", icon: <LayoutDashboard size={20} />, path: "/blogmanage" },
     { name: "글 관리", icon: <FileText size={20} />, path: "/articlemanage" },
     { name: "카테고리 관리", icon: <Folder size={20} />, path: "/categorymanage" },
     { name: "댓글 관리", icon: <MessageCircle size={20} />, path: "/commentmanage" },

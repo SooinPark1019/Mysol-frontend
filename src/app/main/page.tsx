@@ -8,7 +8,7 @@ export default function MainPage() {
   const { isLoggedIn } = useAuth();
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-gray-900">
+    <div className="min-h-screen flex flex-col bg-white text-gray-900 grid-col-12 md:grid-col-8">
       <main className="flex flex-1 p-8 space-x-6 border-t border-gray-300 mt-10">
         {/* 글 목록 섹션 (2 비율) */}
         <section className="flex-[5] p-6">
