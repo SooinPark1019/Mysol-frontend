@@ -45,7 +45,7 @@ export default function UserProfile() {
           <button className="">블로그</button>
         </Link>
         <div className="w-px bg-gray-300 h-8"></div>
-        <Link href="/manage">
+        <Link href="/blogmanage">
           <button className="">관리</button>
         </Link>
       </nav>

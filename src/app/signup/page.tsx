@@ -9,40 +9,35 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [errors, setErrors] = useState<string[]>([]); // 에러 메시지를 배열로 관리
+  const [errors, setErrors] = useState<string[]>([]);
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
 
-  // ✅ 에러 처리 함수 (배열에 추가)
   const handleError = (message: string) => {
     setErrors((prevErrors) => [...prevErrors, message]);
     setLoading(false);
   };
 
-  // ✅ 성공 처리 함수
   const handleSuccess = () => {
     setSuccess("회원가입이 성공적으로 완료되었습니다");
     setUsername("");
     setEmail("");
     setPassword("");
     setConfirmPassword("");
-    setErrors([]); // 에러 초기화
+    setErrors([]);
 
-    // 2초 후 로그인 페이지로 이동
     setTimeout(() => {
-      router.push("/login");
+      router.push("/main");
     }, 2000);
   };
 
-  // ✅ 회원가입 요청 처리 함수
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors([]);
     setSuccess("");
 
-    // 비밀번호 확인
     if (password !== confirmPassword) {
       handleError("비밀번호가 일치하지 않습니다");
       return;
@@ -80,7 +75,6 @@ export default function SignupPage() {
       <div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full mt-20">
         <h2 className="text-3xl font-bold text-gray-300 text-center mb-4">Sign Up</h2>
 
-        {/* ✅ 에러 및 성공 메시지 출력 (모든 메시지 고정 위치에 출력) */}
         {errors.length > 0 && (
           <div className="mb-4 bg-red-500 text-white p-3 rounded">
             {errors.map((error, index) => (
@@ -95,7 +89,6 @@ export default function SignupPage() {
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* ✅ 유저네임 입력 */}
           <label className="text-gray-300">
             Username
             <input
