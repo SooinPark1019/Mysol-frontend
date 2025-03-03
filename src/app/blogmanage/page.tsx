@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Sidebar from "@/src/components/sidebar";
 import axios from "axios";
+import Image from "next/image";
 
 const API_BASE_URL = "https://api.editorialhub.site";
 
@@ -38,9 +39,16 @@ const BlogManagement = () => {
           headers: { "Content-Type": "multipart/form-data" },
         });
         imageUrl = uploadResponse.data.url; // 업로드된 이미지 URL 저장
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("이미지 업로드 실패:", error);
-        const errorMessage = error.response?.data?.message || "이미지 업로드에 실패했습니다.";
+        let errorMessage = "이미지 업로드에 실패했습니다.";
+
+        if (axios.isAxiosError(error) && error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+
         alert(errorMessage);
         return;
       }
@@ -53,9 +61,16 @@ const BlogManagement = () => {
         main_image_URL: imageUrl,
       });
       alert("블로그 정보가 성공적으로 업데이트되었습니다!");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("블로그 정보 업데이트 실패:", error);
-      const errorMessage = error.response?.data?.message || "블로그 정보 업데이트에 실패했습니다.";
+      let errorMessage = "블로그 정보 업데이트에 실패했습니다.";
+
+      if (axios.isAxiosError(error) && error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
       alert(errorMessage);
     }
   };
@@ -72,10 +87,16 @@ const BlogManagement = () => {
 
           {/* 대표 이미지 수정 */}
           <label className="block text-xl font-medium mb-3">대표 이미지 수정</label>
-          
+
           {/* 이미지 미리보기 */}
           {imagePreview ? (
-            <img src={imagePreview} alt="미리보기" className="w-52 h-52 object-cover rounded-lg mb-5 mx-auto shadow" />
+            <Image
+              src={imagePreview}
+              alt="미리보기"
+              width={208}
+              height={208}
+              className="object-cover rounded-lg mb-5 mx-auto shadow"
+            />
           ) : (
             <div className="w-52 h-52 bg-gray-200 rounded-lg flex items-center justify-center mb-5 mx-auto shadow">
               <span className="text-gray-500 text-lg">미리보기 없음</span>
