@@ -81,12 +81,12 @@ const BlogManagement = () => {
       <Sidebar />
 
       {/* 메인 컨텐츠 영역 */}
-      <main className="flex-1 p-10 bg-gray-100 flex flex-col items-center">
+      <main className="flex-1 p-10 bg-gray-100 flex flex-col items-center mt-20">
         <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
-          <h1 className="text-3xl font-bold mb-8 text-center">블로그 관리</h1>
+          <h1 className="text-3xl font-bold mb-8 text-center text-black">블로그 관리</h1>
 
           {/* 대표 이미지 수정 */}
-          <label className="block text-xl font-medium mb-3">대표 이미지 수정</label>
+          <label className="block text-xl font-medium mb-3 text-black">대표 이미지 수정</label>
 
           {/* 이미지 미리보기 */}
           {imagePreview ? (
@@ -107,7 +107,7 @@ const BlogManagement = () => {
           <input type="file" accept="image/*" onChange={handleImageChange} className="mb-8 block w-full text-lg p-2 border rounded-lg" />
 
           {/* 블로그 이름 수정 */}
-          <label className="block text-xl font-medium mb-3">블로그 이름 수정</label>
+          <label className="block text-xl font-medium mb-3 text-black">블로그 이름 수정</label>
           <input
             type="text"
             value={blogName}
