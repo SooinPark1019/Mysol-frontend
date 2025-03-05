@@ -1,12 +1,14 @@
 "use client";
+
 import { useState } from "react";
 import Sidebar from "@/src/components/sidebar";
-import axios from "axios";
 import Image from "next/image";
+import { useAuth } from "@/src/context/AuthContext";
 
 const API_BASE_URL = "https://api.editorialhub.site";
 
 const BlogManagement = () => {
+  const { fetchWithAuth } = useAuth();
   const [blogName, setBlogName] = useState(""); // 블로그 이름 상태
   const [imagePreview, setImagePreview] = useState<string | null>(null); // 이미지 미리보기
   const [imageFile, setImageFile] = useState<File | null>(null); // 업로드할 파일
@@ -25,7 +27,29 @@ const BlogManagement = () => {
     }
   };
 
-  // 블로그 정보 저장 핸들러
+  // 🔹 서버에서 받은 오류 메시지를 우선 반환하는 헬퍼 함수
+  const getServerErrorMessage = async (response: Response) => {
+    try {
+      const errorData = await response.json();
+      if (errorData?.detail) return errorData.detail; // FastAPI의 기본 에러 응답 처리
+      return JSON.stringify(errorData); // JSON 형태로 응답이 오면 문자열로 변환
+    } catch {
+      return response.statusText || "알 수 없는 서버 오류가 발생했습니다.";
+    }
+  };
+
+  // 🔹 오류 메시지를 안전하게 가져오는 헬퍼 함수
+  const getErrorMessage = (error: unknown): string => {
+    if (error instanceof Error) {
+      return error.message;
+    }
+    if (typeof error === "string") {
+      return error;
+    }
+    return "알 수 없는 오류가 발생했습니다.";
+  };
+
+  // 블로그 정보 저장 핸들러 (fetchWithAuth 사용)
   const handleSave = async () => {
     let imageUrl = null;
 
@@ -34,44 +58,41 @@ const BlogManagement = () => {
       formData.append("file", imageFile);
 
       try {
-        // FastAPI 업로드 API 호출
-        const uploadResponse = await axios.post(`${API_BASE_URL}/api/images/upload/`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+        // ✅ 이미지 업로드 요청 (fetchWithAuth 사용)
+        const uploadResponse = await fetchWithAuth(`${API_BASE_URL}/api/images/upload/`, {
+          method: "POST",
+          body: formData,
         });
-        imageUrl = uploadResponse.data.url; // 업로드된 이미지 URL 저장
-      } catch (error: unknown) {
-        console.error("이미지 업로드 실패:", error);
-        let errorMessage = "이미지 업로드에 실패했습니다.";
 
-        if (axios.isAxiosError(error) && error.response?.data?.message) {
-          errorMessage = error.response.data.message;
-        } else if (error instanceof Error) {
-          errorMessage = error.message;
+        if (!uploadResponse.ok) {
+          throw new Error(await getServerErrorMessage(uploadResponse));
         }
 
-        alert(errorMessage);
+        const uploadData = await uploadResponse.json();
+        imageUrl = uploadData.url; // 업로드된 이미지 URL 저장
+      } catch (error) {
+        console.error("이미지 업로드 실패:", error);
+        alert(getErrorMessage(error)); // 🔹 타입 안전한 오류 메시지 처리
         return;
       }
     }
 
     try {
-      // 블로그 정보 업데이트 API 호출
-      await axios.patch(`${API_BASE_URL}/api/blogs/update/`, {
-        blog_name: blogName,
-        main_image_URL: imageUrl,
+      // ✅ 블로그 정보 업데이트 요청 (fetchWithAuth 사용)
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/blogs/update/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ blog_name: blogName, main_image_URL: imageUrl }),
       });
-      alert("블로그 정보가 성공적으로 업데이트되었습니다!");
-    } catch (error: unknown) {
-      console.error("블로그 정보 업데이트 실패:", error);
-      let errorMessage = "블로그 정보 업데이트에 실패했습니다.";
 
-      if (axios.isAxiosError(error) && error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
+      if (!response.ok) {
+        throw new Error(await getServerErrorMessage(response));
       }
 
-      alert(errorMessage);
+      alert("블로그 정보가 성공적으로 업데이트되었습니다!");
+    } catch (error) {
+      console.error("블로그 정보 업데이트 실패:", error);
+      alert(getErrorMessage(error)); // 🔹 타입 안전한 오류 메시지 처리
     }
   };
 
