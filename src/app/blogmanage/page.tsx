@@ -108,8 +108,7 @@ const BlogManagement = () => {
     }
 
     try {
-      // ✅ 블로그 정보 업데이트 요청 (fetchWithAuth 사용)
-      const response = await fetchWithAuth(`/api/blogs/update/`, {
+      const response = await fetchWithAuth(`/api/blogs/update`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ blog_name: blogName, main_image_URL: imageUrl }),
@@ -124,7 +123,7 @@ const BlogManagement = () => {
       console.error("블로그 정보 업데이트 실패:", error);
       alert(getErrorMessage(error));
     } finally {
-      setLoading(false); // ✅ 로딩 종료
+      setLoading(false);
     }
   };
 
