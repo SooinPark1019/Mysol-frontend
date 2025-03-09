@@ -5,8 +5,6 @@ import Sidebar from "@/src/components/sidebar";
 import Image from "next/image";
 import { useAuth } from "@/src/context/AuthContext";
 
-const API_BASE_URL = "https://api.editorialhub.site";
-
 const BlogManagement = () => {
   const { fetchWithAuth, isLoggedIn } = useAuth();
   const [blogName, setBlogName] = useState(""); // 블로그 이름 상태
