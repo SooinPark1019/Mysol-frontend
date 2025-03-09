@@ -36,45 +36,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  // ✅ 자동으로 토큰을 갱신하는 fetch 함수 (서버 에러 메시지 처리)
   const fetchWithAuth = useCallback(
     async (url: string, options: RequestInit = {}) => {
-      const response = await fetch(`${url}`, {
+      const response = await fetch(url, {
         ...options,
-        credentials: "include", // ✅ 쿠키 포함 요청
+        credentials: "include", // ✅ 쿠키 포함 요청 (중요!)
+        headers: {
+          ...options.headers,
+          "Content-Type": "application/json",
+        },
       });
-
+  
       if (!response.ok) {
         if (response.status === 401) {
-          // 🔄 Access Token이 만료된 경우, 자동으로 refresh 시도
+          console.warn("401 Unauthorized - 세션 만료 감지. 자동 로그아웃 처리.");
+  
           const refreshResponse = await fetch(`/api/users/refresh`, {
             method: "POST",
             credentials: "include",
           });
-
+  
           if (!refreshResponse.ok) {
-            const errorData = await refreshResponse.json();
-            console.error(errorData.detail || "Refresh Token 만료됨. 자동 로그아웃 실행.");
-            logout(); // ✅ Refresh Token도 만료되었다면 자동 로그아웃
-            throw new Error(errorData.detail || "세션이 만료되었습니다. 다시 로그인하세요.");
+            logout();
+            throw new Error("세션이 만료되었습니다. 다시 로그인하세요.");
           }
-
-          // ✅ 새 Access Token이 발급되었으므로 원래 요청을 다시 실행
-          return fetch(`${url}`, {
+  
+          // ✅ 새 Access Token을 받은 후 원래 요청 다시 실행
+          return fetch(url, {
             ...options,
             credentials: "include",
           });
         }
-
-        // ❌ 일반적인 에러 처리 (서버의 detail 메시지를 우선 반환)
+  
+        // ✅ 일반적인 에러 처리
         const errorData = await response.json();
         throw new Error(errorData.detail || "요청 처리 중 오류가 발생했습니다.");
       }
-
+  
       return response;
     },
-    [logout] // ✅ 의존성으로 logout을 설정하여 최신 로그아웃 함수 사용
+    [logout]
   );
+  
 
   // ✅ 새로고침 후 로그인 상태 유지
   useEffect(() => {
