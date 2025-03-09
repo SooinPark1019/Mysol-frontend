@@ -84,7 +84,7 @@ const BlogManagement = () => {
 
       try {
         // ✅ 이미지 업로드 요청 (fetchWithAuth 사용)
-        const uploadResponse = await fetchWithAuth(`${API_BASE_URL}/api/images/upload/`, {
+        const uploadResponse = await fetchWithAuth(`/api/images/upload/`, {
           method: "POST",
           body: formData, // ✅ Content-Type 자동 설정
         });
@@ -109,7 +109,7 @@ const BlogManagement = () => {
 
     try {
       // ✅ 블로그 정보 업데이트 요청 (fetchWithAuth 사용)
-      const response = await fetchWithAuth(`${API_BASE_URL}/api/blogs/update/`, {
+      const response = await fetchWithAuth(`/api/blogs/update/`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ blog_name: blogName, main_image_URL: imageUrl }),

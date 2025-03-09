@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     async (url: string, options: RequestInit = {}) => {
       const response = await fetch(url, {
         ...options,
-        credentials: "include", // ✅ 쿠키 포함 요청 (중요!)
+        credentials: "include",
         headers: {
           ...options.headers,
           "Content-Type": "application/json",
@@ -61,7 +61,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             throw new Error("세션이 만료되었습니다. 다시 로그인하세요.");
           }
   
-          // ✅ 새 Access Token을 받은 후 원래 요청 다시 실행
           return fetch(url, {
             ...options,
             credentials: "include",
