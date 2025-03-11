@@ -124,16 +124,16 @@ export async function createBlog(data: { name: string; description: string}): Pr
   }, getAuthToken());
 }
 
-export async function fetchmyBlogs(): Promise<Blog[]> {
-  return apiRequest<Blog[]>("/blogs/my_blog", {}, getAuthToken());
+export async function fetchmyBlog(): Promise<Blog> {
+  return apiRequest<Blog>("blogs/my_blog", {}, getAuthToken());
 }
 
 export async function fetchBlog(blogId: string): Promise<Blog> {
   return apiRequest<Blog>(`/blogs/by_id/${blogId}`)
 }
 
-export async function updateBlog(data: { name?: string; description?: string }): Promise<Blog> {
-  return apiRequest<Blog>(`/blogs/update`, {
+export async function updateBlog(data: { blog_name?: string; description?: string }): Promise<Blog> {
+  return apiRequest<Blog>(`blogs/update`, {
     method: "PATCH",
     body: JSON.stringify(data),
   }, getAuthToken())
@@ -147,8 +147,16 @@ export async function createCategory(blogId: string, data: { name: string }): Pr
 }
 
 export async function fetchCategories(blogId: string): Promise<Category[]> {
-  return apiRequest<Category[]>(`/blogs/${blogId}/categories/`)
+  const response = await apiRequest<{ category_list: { id: string; category_name: string }[] }>(
+    `categories/list/${blogId}`
+  );
+
+  return response.category_list.map((cat) => ({
+    id: cat.id.toString(),
+    name: cat.category_name,
+  }));
 }
+
 
 export async function updateCategory(blogId: string, categoryId: string, data: { name: string }): Promise<Category> {
   return apiRequest<Category>(`/blogs/${blogId}/categories/${categoryId}`, {

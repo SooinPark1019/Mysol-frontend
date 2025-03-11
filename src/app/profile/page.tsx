@@ -42,16 +42,6 @@ export default function ProfilePage() {
           <Label htmlFor="name">Name</Label>
           <Input id="name" value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} />
         </div>
-        <div>
-          <Label htmlFor="profilePicture">Profile Picture</Label>
-          <Input
-            id="profilePicture"
-            type="file"
-            accept="image/*"
-            onChange={(e) => setProfilePicture(e.target.files?.[0] || null)}
-            disabled={isLoading}
-          />
-        </div>
         <Button type="submit" disabled={isLoading}>
           {isLoading ? "Updating..." : "Update Profile"}
         </Button>

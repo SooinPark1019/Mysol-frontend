@@ -6,15 +6,16 @@ export interface User {
 
 export interface Blog {
   id: string
-  name: string
+  blog_name: string
   description: string
-  owner_id: string
+  main_image_url: string
+  user_id: string
+  default_category_id: string
 }
 
 export interface Category {
   id: string
   name: string
-  blog_id: string
 }
 
 export interface Post {

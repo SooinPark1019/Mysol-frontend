@@ -1,107 +1,119 @@
-"use client"
+"use client";
 
-import { Label } from "@/components/ui/label"
+import { useState, useEffect } from "react";
+import { Plus, Edit, Trash } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { fetchCategories, createCategory, updateCategory, deleteCategory, fetchmyBlog } from "@/lib/api";
+import type { Blog, Category } from "@/types/blog";
 
-import { useState, useEffect } from "react"
-import { Plus, Edit, Trash } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useToast } from "@/hooks/use-toast"
-import { fetchCategories, createCategory, updateCategory, deleteCategory } from "@/lib/api"
-import type { Category } from "@/types/blog"
-
-interface CategoryManagerProps {
-  blogId: string
-}
-
-export function CategoryManager({ blogId }: CategoryManagerProps) {
-  const [categories, setCategories] = useState<Category[]>([])
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
-  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
-  const [categoryName, setCategoryName] = useState("")
-  const { toast } = useToast()
+export function CategoryManager() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [blog, setBlog] = useState<Blog | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [categoryName, setCategoryName] = useState("");
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    loadCategories()
-  }, [])
+    const loadBlogAndCategories = async () => {
+      try {
+        // 🔹 블로그 정보 가져오기
+        const blogData = await fetchmyBlog();
+        setBlog(blogData);
 
-  const loadCategories = async () => {
-    try {
-      const data = await fetchCategories(blogId)
-      setCategories(data)
-    } catch (error) {
-      console.error("Failed to load categories:", error)
-      toast({
-        title: "Error",
-        description: "Failed to load categories. Please try again.",
-        variant: "destructive",
-      })
-    }
-  }
+        // 🔹 블로그 ID를 기반으로 카테고리 가져오기
+        const categoriesData = await fetchCategories(blogData.id);
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error("Failed to load blog or categories:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load data. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBlogAndCategories();
+  }, []);
 
   const handleCreateCategory = async () => {
+    if (!blog) return;
+
     try {
-      const newCategory = await createCategory(blogId, { name: categoryName })
-      setCategories([...categories, newCategory])
-      setCategoryName("")
-      setIsDialogOpen(false)
+      const newCategory = await createCategory(blog.id, { name: categoryName });
+      setCategories([...categories, newCategory]);
+      setCategoryName("");
+      setIsDialogOpen(false);
       toast({
         title: "Success",
         description: "Category created successfully.",
-      })
+      });
     } catch (error) {
-      console.error("Failed to create category:", error)
+      console.error("Failed to create category:", error);
       toast({
         title: "Error",
         description: "Failed to create category. Please try again.",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const handleUpdateCategory = async () => {
-    if (!editingCategoryId) return
+    if (!blog || !editingCategoryId) return;
 
     try {
-      const updatedCategory = await updateCategory(blogId, editingCategoryId, { name: categoryName })
-      setCategories(categories.map((cat) => (cat.id === editingCategoryId ? updatedCategory : cat)))
-      setCategoryName("")
-      setIsDialogOpen(false)
-      setIsEditing(false)
-      setEditingCategoryId(null)
+      const updatedCategory = await updateCategory(blog.id, editingCategoryId, { name: categoryName });
+      setCategories(categories.map((cat) => (cat.id === editingCategoryId ? updatedCategory : cat)));
+      setCategoryName("");
+      setIsDialogOpen(false);
+      setIsEditing(false);
+      setEditingCategoryId(null);
       toast({
         title: "Success",
         description: "Category updated successfully.",
-      })
+      });
     } catch (error) {
-      console.error("Failed to update category:", error)
+      console.error("Failed to update category:", error);
       toast({
         title: "Error",
         description: "Failed to update category. Please try again.",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const handleDeleteCategory = async (categoryId: string) => {
+    if (!blog) return;
+
     try {
-      await deleteCategory(blogId, categoryId)
-      setCategories(categories.filter((cat) => cat.id !== categoryId))
+      await deleteCategory(blog.id, categoryId);
+      setCategories(categories.filter((cat) => cat.id !== categoryId));
       toast({
         title: "Success",
         description: "Category deleted successfully.",
-      })
+      });
     } catch (error) {
-      console.error("Failed to delete category:", error)
+      console.error("Failed to delete category:", error);
       toast({
         title: "Error",
         description: "Failed to delete category. Please try again.",
         variant: "destructive",
-      })
+      });
     }
+  };
+
+  if (loading) {
+    return <div>Loading categories...</div>;
   }
 
   return (
@@ -113,10 +125,10 @@ export function CategoryManager({ blogId }: CategoryManagerProps) {
         <div className="space-y-4">
           <Button
             onClick={() => {
-              setIsEditing(false)
-              setEditingCategoryId(null)
-              setCategoryName("")
-              setIsDialogOpen(true)
+              setIsEditing(false);
+              setEditingCategoryId(null);
+              setCategoryName("");
+              setIsDialogOpen(true);
             }}
           >
             <Plus className="mr-2 h-4 w-4" /> Add Category
@@ -129,10 +141,10 @@ export function CategoryManager({ blogId }: CategoryManagerProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    setIsEditing(true)
-                    setEditingCategoryId(category.id)
-                    setCategoryName(category.name)
-                    setIsDialogOpen(true)
+                    setIsEditing(true);
+                    setEditingCategoryId(category.id);
+                    setCategoryName(category.name);
+                    setIsDialogOpen(true);
                   }}
                 >
                   <Edit className="h-4 w-4" />
@@ -172,6 +184,5 @@ export function CategoryManager({ blogId }: CategoryManagerProps) {
         </DialogContent>
       </Dialog>
     </Card>
-  )
+  );
 }
-
