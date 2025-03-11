@@ -3,11 +3,9 @@ import type { Blog, Category, Post, User } from "@/types/blog"
 const API_URL = "https://api.editorialhub.site/api/"
 
 async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = localStorage.getItem("token")
   const headers = {
     ...options.headers,
     "Content-Type": "application/json",
-    Authorization: token ? `Bearer ${token}` : "",
   }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
@@ -25,45 +23,34 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
 }
 
 export async function signUp(data: { email: string; username: string; password: string }): Promise<User> {
-  const response = await fetch(`${API_URL}/users/signup`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-    credentials: "include", // This ensures cookies are sent with requests
-  })
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.detail || `API request failed: ${response.status} ${response.statusText}`)
-  }
-
-  return response.json()
-}
-
-export async function login(data: { email: string; password: string }): Promise<{
-  access_token: string
-  token_type: string
-}> {
-  return apiRequest<{ access_token: string; token_type: string }>("users/signin", {
+  return apiRequest<User>("users/signup", {
     method: "POST",
     body: JSON.stringify(data),
   })
 }
 
-export async function logout(): Promise<void> {
-  return apiRequest("users/logout", {
+export async function login(data: { email: string; password: string }): Promise<{ message: string; username: string }> {
+  return apiRequest<{ message: string; username: string }>("users/signin", {
+    method: "POST",
+    body: JSON.stringify(data),
+  })
+}
+
+// logout 함수를 수정합니다
+export async function logout(): Promise<{ message: string }> {
+  return apiRequest<{ message: string }>("users/logout", {
     method: "POST",
   })
 }
 
-export async function refreshToken(): Promise<void> {
-  return apiRequest("users/refresh", {
+// refreshToken 함수를 수정합니다
+export async function refreshToken(): Promise<{ message: string }> {
+  return apiRequest<{ message: string }>("users/refresh", {
     method: "POST",
   })
 }
 
+// getCurrentUser 함수를 수정합니다
 export async function getCurrentUser(): Promise<User> {
   return apiRequest<User>("users/me")
 }

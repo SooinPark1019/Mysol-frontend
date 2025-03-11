@@ -15,6 +15,7 @@ export function Navbar() {
   const { user, setUser, isLoading } = useAuth()
   const { toast } = useToast()
 
+  // handleLogout 함수를 수정합니다
   const handleLogout = async () => {
     try {
       await logout()
