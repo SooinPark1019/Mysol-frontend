@@ -29,7 +29,7 @@ export function CategorySelector({ selectedCategories, onChange }: CategorySelec
     const loadCategories = async () => {
       try {
         setLoading(true)
-        const data = await fetchCategories()
+        const data = await fetchCategories("1")
         setCategories(data)
       } catch (error) {
         console.error("Failed to load categories:", error)
@@ -64,7 +64,7 @@ export function CategorySelector({ selectedCategories, onChange }: CategorySelec
 
     try {
       setCreatingCategory(true)
-      const newCategory = await createCategory({ name: newCategoryName.trim() })
+      const newCategory = await createCategory("1", { name: newCategoryName.trim() })
       setCategories((prev) => [...prev, newCategory])
       onChange([...selectedCategories, newCategory])
       setNewCategoryName("")
