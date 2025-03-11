@@ -1,12 +1,11 @@
-import { Suspense } from "react"
-import { Navbar } from "@/components/navbar"
-import { PostView } from "@/components/post-view"
-import { PostViewSkeleton } from "@/components/post-view-skeleton"
+import { Suspense } from "react";
+import { Navbar } from "@/components/navbar";
+import { PostView } from "@/components/post-view";
+import { PostViewSkeleton } from "@/components/post-view-skeleton";
+import { GetServerSideProps } from "next";
 
 interface PostPageProps {
-  params: {
-    id: string
-  }
+  params: { id: string };
 }
 
 export default function PostPage({ params }: PostPageProps) {
@@ -19,6 +18,14 @@ export default function PostPage({ params }: PostPageProps) {
         </Suspense>
       </main>
     </div>
-  )
+  );
 }
 
+// 🔹 Next.js가 `params`를 미리 생성하도록 설정
+export async function generateStaticParams() {
+  return [
+    { id: "1" },
+    { id: "2" },
+    { id: "3" },
+  ];
+}
