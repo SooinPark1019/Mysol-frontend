@@ -48,10 +48,17 @@ export function CategoryManager() {
 
   const handleCreateCategory = async () => {
     if (!blog) return;
-
+  
     try {
-      const newCategory = await createCategory(blog.id, { name: categoryName });
-      setCategories([...categories, newCategory]);
+      const newCategory = await createCategory({ categoryname: categoryName });
+  
+      // 🔹 최신 상태 기반으로 업데이트 (prev 사용)
+      setCategories((prev) => [...prev, newCategory]);
+  
+      // 🔹 또는 전체 카테고리를 다시 불러와 최신 상태 유지
+      const updatedCategories = await fetchCategories(blog.id);
+      setCategories(updatedCategories);
+  
       setCategoryName("");
       setIsDialogOpen(false);
       toast({
@@ -67,17 +74,21 @@ export function CategoryManager() {
       });
     }
   };
+  
 
   const handleUpdateCategory = async () => {
-    if (!blog || !editingCategoryId) return;
-
+    if (!editingCategoryId) return;
     try {
-      const updatedCategory = await updateCategory(blog.id, editingCategoryId, { name: categoryName });
-      setCategories(categories.map((cat) => (cat.id === editingCategoryId ? updatedCategory : cat)));
+      await updateCategory(editingCategoryId, { categoryname: categoryName });
+  
+      const updatedCategories = await fetchCategories(blog?.id ?? "");
+      setCategories(updatedCategories);
+  
       setCategoryName("");
       setIsDialogOpen(false);
       setIsEditing(false);
       setEditingCategoryId(null);
+  
       toast({
         title: "Success",
         description: "Category updated successfully.",
@@ -91,13 +102,15 @@ export function CategoryManager() {
       });
     }
   };
-
+  
+  
   const handleDeleteCategory = async (categoryId: string) => {
-    if (!blog) return;
-
     try {
-      await deleteCategory(blog.id, categoryId);
-      setCategories(categories.filter((cat) => cat.id !== categoryId));
+      await deleteCategory(categoryId);
+
+      const updatedCategories = await fetchCategories(blog?.id ?? "");
+      setCategories(updatedCategories);
+  
       toast({
         title: "Success",
         description: "Category deleted successfully.",
@@ -111,6 +124,7 @@ export function CategoryManager() {
       });
     }
   };
+  
 
   if (loading) {
     return <div>Loading categories...</div>;

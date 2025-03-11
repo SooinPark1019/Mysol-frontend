@@ -57,6 +57,10 @@ async function apiRequest<T>(
     throw new Error(errorData.detail || `API request failed: ${response.status} ${response.statusText}`);
   }
 
+  if (response.status === 204) {
+    return null as T;
+  }
+
   return response.json();
 }
 
@@ -139,11 +143,16 @@ export async function updateBlog(data: { blog_name?: string; description?: strin
   }, getAuthToken())
 }
 
-export async function createCategory(blogId: string, data: { name: string }): Promise<Category> {
-  return apiRequest<Category>(`/blogs/${blogId}/categories/`, {
+export async function createCategory(data: { categoryname: string }): Promise<Category> {
+  const requestData = {
+    ...data,          // 기존 데이터 유지 (categoryname)
+    categoryLevel: 1, // 기본값 추가
+  };
+
+  return apiRequest<Category>("categories/create", {
     method: "POST",
-    body: JSON.stringify(data),
-  })
+    body: JSON.stringify(requestData),
+  }, getAuthToken());
 }
 
 export async function fetchCategories(blogId: string): Promise<Category[]> {
@@ -158,17 +167,17 @@ export async function fetchCategories(blogId: string): Promise<Category[]> {
 }
 
 
-export async function updateCategory(blogId: string, categoryId: string, data: { name: string }): Promise<Category> {
-  return apiRequest<Category>(`/blogs/${blogId}/categories/${categoryId}`, {
-    method: "PUT",
+export async function updateCategory(categoryId: string, data: { categoryname: string }): Promise<Category> {
+  return apiRequest<Category>(`categories/${categoryId}`, {
+    method: "PATCH",
     body: JSON.stringify(data),
-  })
+  }, getAuthToken())
 }
 
-export async function deleteCategory(blogId: string, categoryId: string): Promise<void> {
-  return apiRequest(`/blogs/${blogId}/categories/${categoryId}`, {
+export async function deleteCategory(categoryId: string): Promise<void> {
+  return apiRequest(`categories/${categoryId}`, {
     method: "DELETE",
-  })
+  }, getAuthToken())
 }
 
 export async function createPost(
