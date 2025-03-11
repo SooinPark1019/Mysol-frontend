@@ -58,7 +58,7 @@ export function PostFilters() {
       <div>
         <h3 className="text-lg font-semibold mb-4">Search and Filters</h3>
         <div className="space-y-4">
-          <Tabs value={searchType} onValueChange={(value: "keyword" | "problem") => setSearchType(value)}>
+          <Tabs value={searchType} onValueChange={(value) => setSearchType(value as "keyword" | "problem")}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="keyword">Keyword Search</TabsTrigger>
               <TabsTrigger value="problem">Problem Number</TabsTrigger>
