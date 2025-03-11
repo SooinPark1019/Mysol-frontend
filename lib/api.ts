@@ -1,58 +1,110 @@
-import type { Blog, Category, Post, User } from "@/types/blog"
+import type { Blog, Category, Post, User } from "@/types/blog";
 
-const API_URL = "https://api.editorialhub.site/api/"
+const API_URL = "https://api.editorialhub.site/api/";
 
-async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const headers = {
-    ...options.headers,
+/**
+ * 공통 API 요청 함수
+ */
+let isRefreshing = false; // 🔹 현재 refreshToken 요청 중인지 추적
+
+async function apiRequest<T>(
+  endpoint: string,
+  options: RequestInit = {},
+  authToken?: string,
+  retry = true // 🔹 재시도를 허용할지 여부
+): Promise<T> {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    ...((options.headers || {}) as Record<string, string>),
+  };
+
+  if (authToken) {
+    headers["Authorization"] = `Bearer ${authToken}`;
   }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
-    credentials: "include",
     headers,
-  })
+  });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.detail || `API request failed: ${response.status} ${response.statusText}`)
+  if (response.status === 401) {
+    console.warn("Access token expired. Attempting to refresh...");
+
+    const refreshTokenStr = localStorage.getItem("refresh_token");
+
+    if (refreshTokenStr && retry && !isRefreshing) {
+      isRefreshing = true; // 🔹 Refresh 요청 중 상태로 변경
+      try {
+        const { access_token, refresh_token } = await refreshToken(refreshTokenStr);
+        localStorage.setItem("access_token", access_token);
+        localStorage.setItem("refresh_token", refresh_token);
+        isRefreshing = false; // 🔹 Refresh 완료 후 상태 해제
+
+        // 🔹 새로운 토큰으로 원래 요청을 재시도 (하지만 이번엔 retry=false)
+        return apiRequest<T>(endpoint, options, access_token, false);
+      } catch (error) {
+        console.error("Failed to refresh token:", error);
+        isRefreshing = false; // 🔹 실패 시 상태 해제
+        throw new Error("Session expired. Please log in again.");
+      }
+    } else {
+      throw new Error("Session expired. Please log in again.");
+    }
   }
 
-  return response.json()
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || `API request failed: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
 }
 
+/**
+ * 회원가입 요청
+ */
 export async function signUp(data: { email: string; username: string; password: string }): Promise<User> {
   return apiRequest<User>("users/signup", {
     method: "POST",
     body: JSON.stringify(data),
-  })
+  });
 }
 
-export async function login(data: { email: string; password: string }): Promise<{ message: string; username: string }> {
-  return apiRequest<{ message: string; username: string }>("users/signin", {
+/**
+ * 로그인 요청 (JWT 토큰 반환)
+ */
+export async function login(data: { email: string; password: string }): Promise<{ access_token: string; refresh_token: string }> {
+  return apiRequest<{ access_token: string; refresh_token: string; username: string }>("users/signin", {
     method: "POST",
     body: JSON.stringify(data),
-  })
+  });
 }
 
-// logout 함수를 수정합니다
-export async function logout(): Promise<{ message: string }> {
+/**
+ * 로그아웃 요청 (refresh_token 필요)
+ */
+export async function logout(refreshToken: string): Promise<{ message: string }> {
   return apiRequest<{ message: string }>("users/logout", {
     method: "POST",
-  })
+    body: JSON.stringify({ refresh_token: refreshToken }),
+  });
 }
 
-// refreshToken 함수를 수정합니다
-export async function refreshToken(): Promise<{ message: string }> {
-  return apiRequest<{ message: string }>("users/refresh", {
+/**
+ * 토큰 갱신 (refresh_token 필요)
+ */
+export async function refreshToken(refreshToken: string): Promise<{ access_token: string; refresh_token: string }> {
+  return apiRequest<{ access_token: string; refresh_token: string }>("users/refresh", {
     method: "POST",
-  })
+    body: JSON.stringify({ refresh_token: refreshToken }),
+  }, undefined, false); // 🔹 Refresh 요청은 자체적으로 다시 refreshToken을 호출하지 않도록 함
 }
 
-// getCurrentUser 함수를 수정합니다
-export async function getCurrentUser(): Promise<User> {
-  return apiRequest<User>("users/me")
+/**
+ * 현재 사용자 정보 가져오기 (JWT 토큰 필요)
+ */
+export async function getCurrentUser(authToken: string): Promise<User> {
+  return apiRequest<User>("users/me", {}, authToken);
 }
 
 export async function createBlog(data: { name: string; description: string }): Promise<Blog> {

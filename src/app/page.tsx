@@ -7,7 +7,6 @@ import { PostSkeleton } from "@/components/post-skeleton"
 export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <Navbar />
       <main className="flex-1 container py-6 md:py-12">
         <div className="flex flex-col gap-8">
           <div className="space-y-4">

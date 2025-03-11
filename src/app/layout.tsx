@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from "@/contexts/auth-context"
 import { cn } from "@/lib/utils"
 import "./globals.css"
+import { Navbar } from "@/components/navbar"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -25,6 +26,7 @@ export default function RootLayout({
       <body className={cn("min-h-screen bg-background font-sans antialiased", inter.className)}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>
+            <Navbar />
             {children}
             <Toaster />
           </AuthProvider>
@@ -33,7 +35,3 @@ export default function RootLayout({
     </html>
   )
 }
-
-
-
-import './globals.css'

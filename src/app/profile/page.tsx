@@ -12,7 +12,7 @@ import { useAuth } from "@/contexts/auth-context"
 
 export default function ProfilePage() {
   const { user, setUser } = useAuth()
-  const [name, setName] = useState(user?.name || "")
+  const [name, setName] = useState(user?.username || "")
   const [profilePicture, setProfilePicture] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()

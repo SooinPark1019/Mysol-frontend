@@ -18,7 +18,13 @@ export function Navbar() {
   // handleLogout 함수를 수정합니다
   const handleLogout = async () => {
     try {
-      await logout()
+        const accessToken = localStorage.getItem("access_token");
+
+      if (!accessToken) {
+        throw new Error("No access token found. You may already be logged out.");
+      }
+
+      await logout(accessToken)
       setUser(null)
       toast({
         title: "Logged out",

@@ -9,7 +9,7 @@ import { fetchPosts } from "@/lib/api"
 import type { Post } from "@/types/blog"
 
 interface PostFeedProps {
-  blogId: string
+  blogId?: string
 }
 
 export function PostFeed({ blogId }: PostFeedProps) {
