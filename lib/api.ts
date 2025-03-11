@@ -74,10 +74,12 @@ export async function signUp(data: { email: string; username: string; password: 
  * 로그인 요청 (JWT 토큰 반환)
  */
 export async function login(data: { email: string; password: string }): Promise<{ access_token: string; refresh_token: string }> {
-  return apiRequest<{ access_token: string; refresh_token: string; username: string }>("users/signin", {
+  const response = await apiRequest<{ access_token: string; refresh_token: string }>("users/signin", {
     method: "POST",
     body: JSON.stringify(data),
   });
+
+  return response;
 }
 
 /**

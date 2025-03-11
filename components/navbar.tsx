@@ -19,12 +19,13 @@ export function Navbar() {
   const handleLogout = async () => {
     try {
         const accessToken = localStorage.getItem("access_token");
+        const refreshToken = localStorage.getItem("refresh_token");
 
-      if (!accessToken) {
+      if (!accessToken||!refreshToken) {
         throw new Error("No access token found. You may already be logged out.");
       }
 
-      await logout(accessToken)
+      await logout(refreshToken)
       setUser(null)
       toast({
         title: "Logged out",
