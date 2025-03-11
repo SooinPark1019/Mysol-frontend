@@ -31,7 +31,7 @@ export function LoginForm() {
       localStorage.setItem("refresh_token", refresh_token);
 
       // 🔹 로그인 후 사용자 정보 가져오기
-      const userData = await getCurrentUser(access_token);
+      const userData = await getCurrentUser();
 
       // 🔹 Auth Context에 사용자 정보 저장
       setUser(userData);

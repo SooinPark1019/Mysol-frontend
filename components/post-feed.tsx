@@ -32,7 +32,7 @@ export function PostFeed({ blogId }: PostFeedProps) {
       try {
         setLoading(true)
         setError(null)
-        const data = await fetchPosts(blogId, {
+        const data = await fetchPosts({
           skip: (page - 1) * limit,
           limit,
           search,
@@ -69,7 +69,7 @@ export function PostFeed({ blogId }: PostFeedProps) {
     return (
       <div className="space-y-6">
         {[...Array(3)].map((_, index) => (
-          <PostCard key={index} post={undefined} blogId={blogId} />
+          <PostCard key={index} post={undefined} />
         ))}
       </div>
     )
@@ -97,7 +97,7 @@ export function PostFeed({ blogId }: PostFeedProps) {
       )}
       <div className="grid gap-6">
         {posts.map((post) => (
-          <PostCard key={post.id} post={post} blogId={blogId} />
+          <PostCard key={post.id} post={post} />
         ))}
       </div>
       {hasMore && (

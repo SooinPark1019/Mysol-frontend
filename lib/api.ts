@@ -60,6 +60,14 @@ async function apiRequest<T>(
   return response.json();
 }
 
+function getAuthToken(): string {
+  const authToken = localStorage.getItem("access_token");
+  if (!authToken) {
+    throw new Error("No access token found. Please log in.");
+  }
+  return authToken;
+}
+
 /**
  * 회원가입 요청
  */
@@ -105,36 +113,30 @@ export async function refreshToken(refreshToken: string): Promise<{ access_token
 /**
  * 현재 사용자 정보 가져오기 (JWT 토큰 필요)
  */
-export async function getCurrentUser(authToken: string): Promise<User> {
-  return apiRequest<User>("users/me", {}, authToken);
+export async function getCurrentUser(): Promise<User> {
+  return apiRequest<User>("users/me", {}, getAuthToken());
 }
 
-export async function createBlog(data: { name: string; description: string }): Promise<Blog> {
-  return apiRequest<Blog>("/blogs/", {
+export async function createBlog(data: { name: string; description: string}): Promise<Blog> {
+  return apiRequest<Blog>("/blogs", {
     method: "POST",
     body: JSON.stringify(data),
-  })
+  }, getAuthToken());
 }
 
-export async function fetchBlogs(): Promise<Blog[]> {
-  return apiRequest<Blog[]>("/blogs/")
+export async function fetchmyBlogs(): Promise<Blog[]> {
+  return apiRequest<Blog[]>("/blogs/my_blog", {}, getAuthToken());
 }
 
 export async function fetchBlog(blogId: string): Promise<Blog> {
-  return apiRequest<Blog>(`/blogs/${blogId}`)
+  return apiRequest<Blog>(`/blogs/by_id/${blogId}`)
 }
 
-export async function updateBlog(blogId: string, data: { name?: string; description?: string }): Promise<Blog> {
-  return apiRequest<Blog>(`/blogs/${blogId}`, {
-    method: "PUT",
+export async function updateBlog(data: { name?: string; description?: string }): Promise<Blog> {
+  return apiRequest<Blog>(`/blogs/update`, {
+    method: "PATCH",
     body: JSON.stringify(data),
-  })
-}
-
-export async function deleteBlog(blogId: string): Promise<void> {
-  return apiRequest(`/blogs/${blogId}`, {
-    method: "DELETE",
-  })
+  }, getAuthToken())
 }
 
 export async function createCategory(blogId: string, data: { name: string }): Promise<Category> {
@@ -176,7 +178,6 @@ export async function createPost(
 }
 
 export async function fetchPosts(
-  blogId: string,
   params: {
     skip?: number
     limit?: number
@@ -198,7 +199,7 @@ export async function fetchPosts(
   const queryString = queryParams.toString() ? `?${queryParams.toString()}` : ""
 
   try {
-    return await apiRequest<Post[]>(`/blogs/${blogId}/posts/${queryString}`)
+    return await apiRequest<Post[]>(`/posts/${queryString}`)
   } catch (error) {
     console.error("Failed to fetch posts:", error)
     // Return mock data as fallback
@@ -207,7 +208,7 @@ export async function fetchPosts(
         id: "1",
         title: "Sample Post 1",
         content: "This is a sample post content.",
-        blog_id: blogId,
+        blog_id: "1",
         category_id: "1",
         author_id: "1",
         created_at: new Date().toISOString(),
@@ -217,7 +218,7 @@ export async function fetchPosts(
         id: "2",
         title: "Sample Post 2",
         content: "This is another sample post content.",
-        blog_id: blogId,
+        blog_id: "1",
         category_id: "2",
         author_id: "1",
         created_at: new Date().toISOString(),

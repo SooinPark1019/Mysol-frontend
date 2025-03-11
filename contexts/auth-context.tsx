@@ -21,14 +21,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     async function loadUser(retries = 0) {
-      const accessToken = localStorage.getItem("access_token");
-      if (!accessToken) {
-        setIsLoading(false);
-        return;
-      }
-
       try {
-        const userData = await getCurrentUser(accessToken);
+        const userData = await getCurrentUser();
         setUser(userData);
       } catch (error) {
         console.error(`Attempt ${retries + 1} failed:`, error);
@@ -48,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.setItem("access_token", access_token);
           localStorage.setItem("refresh_token", refresh_token);
 
-          const refreshedUser = await getCurrentUser(access_token);
+          const refreshedUser = await getCurrentUser();
           setUser(refreshedUser);
         } catch (refreshError) {
           console.error("Failed to refresh token:", refreshError);
