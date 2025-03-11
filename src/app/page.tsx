@@ -1,5 +1,4 @@
 import { Suspense } from "react"
-import { Navbar } from "@/components/navbar"
 import { PostFeed } from "@/components/post-feed"
 import { PostFilters } from "@/components/post-filters"
 import { PostSkeleton } from "@/components/post-skeleton"
