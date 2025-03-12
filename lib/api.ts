@@ -236,7 +236,7 @@ export async function fetchPostsByProblemNumber(
     sort_by?: "latest" | "likes" | "views";
   }
 ): Promise<PaginatedArticleListResponse> {
-  const { problem_number, page = 1, per_page = 2, sort_by = "latest" } = params;
+  const { problem_number, page = 1, per_page = 10, sort_by = "latest" } = params;
   const queryParams = new URLSearchParams();
   queryParams.set("page", page.toString());
   queryParams.set("per_page", per_page.toString());

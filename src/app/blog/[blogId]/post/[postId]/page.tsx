@@ -3,14 +3,17 @@ import { PostDetail } from "@/components/post-detail"
 import { PostDetailSkeleton } from "@/components/post-detail-skeleton"
 
 interface PostPageProps {
-  params: Record<string, string | undefined>;
+  params: {
+    blogId: string
+    postId: string
+  }
 }
 
-export default function PostPage({ params }: PostPageProps) {
-  const blogId = params.blogId ? Number(params.blogId) : null;
-  const postId = params.postId ? Number(params.postId) : null;
+export default async function PostPage({ params }: PostPageProps) {
+  const blogId = Number(params.blogId)
+  const postId = Number(params.postId)
 
-  if (!blogId || !postId) {
+  if (isNaN(blogId) || isNaN(postId)) {
     return (
       <div className="flex min-h-screen flex-col">
         <main className="flex-1 container py-6 md:py-12">
@@ -19,7 +22,7 @@ export default function PostPage({ params }: PostPageProps) {
           </h2>
         </main>
       </div>
-    );
+    )
   }
 
   return (
@@ -30,5 +33,5 @@ export default function PostPage({ params }: PostPageProps) {
         </Suspense>
       </main>
     </div>
-  );
+  )
 }
