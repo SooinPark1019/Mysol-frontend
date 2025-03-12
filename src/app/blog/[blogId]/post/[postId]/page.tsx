@@ -2,18 +2,12 @@ import { Suspense } from "react"
 import { PostDetail } from "@/components/post-detail"
 import { PostDetailSkeleton } from "@/components/post-detail-skeleton"
 
-interface PostPageProps {
-  params: {
-    blogId: string
-    postId: string
-  }
-}
+// 인라인 타입 사용: params는 { blogId: string, postId: string }로 정의
+export default async function PostPage({ params }: { params: { blogId: string, postId: string } }) {
+  const blogIdNum = Number(params.blogId)
+  const postIdNum = Number(params.postId)
 
-export default async function PostPage({ params }: PostPageProps) {
-  const blogId = Number(params.blogId)
-  const postId = Number(params.postId)
-
-  if (isNaN(blogId) || isNaN(postId)) {
+  if (isNaN(blogIdNum) || isNaN(postIdNum)) {
     return (
       <div className="flex min-h-screen flex-col">
         <main className="flex-1 container py-6 md:py-12">
@@ -29,7 +23,7 @@ export default async function PostPage({ params }: PostPageProps) {
     <div className="flex min-h-screen flex-col">
       <main className="flex-1 container py-6 md:py-12">
         <Suspense fallback={<PostDetailSkeleton />}>
-          <PostDetail blogId={blogId} postId={postId} />
+          <PostDetail blogId={blogIdNum} postId={postIdNum} />
         </Suspense>
       </main>
     </div>
