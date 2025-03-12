@@ -1,4 +1,4 @@
-import type { Blog, Category, Post, User } from "@/types/blog";
+import type { Blog, Category, Post, User, PaginatedArticleListResponse } from "@/types/blog";
 
 const API_URL = "https://api.editorialhub.site/api/";
 
@@ -145,8 +145,8 @@ export async function updateBlog(data: { blog_name?: string; description?: strin
 
 export async function createCategory(data: { categoryname: string }): Promise<Category> {
   const requestData = {
-    ...data,          // 기존 데이터 유지 (categoryname)
-    categoryLevel: 1, // 기본값 추가
+    ...data,
+    categoryLevel: 1,
   };
 
   return apiRequest<Category>("categories/create", {
@@ -155,130 +155,146 @@ export async function createCategory(data: { categoryname: string }): Promise<Ca
   }, getAuthToken());
 }
 
-export async function fetchCategories(blogId: string): Promise<Category[]> {
-  const response = await apiRequest<{ category_list: { id: string; category_name: string }[] }>(
+export async function fetchCategories(blogId: number): Promise<Category[]> {
+  const response = await apiRequest<{ category_list: { id: number; category_name: string }[] }>(
     `categories/list/${blogId}`
   );
 
   return response.category_list.map((cat) => ({
-    id: cat.id.toString(),
+    id: cat.id,
     name: cat.category_name,
   }));
 }
 
 
-export async function updateCategory(categoryId: string, data: { categoryname: string }): Promise<Category> {
+export async function updateCategory(categoryId: number, data: { categoryname: string }): Promise<Category> {
   return apiRequest<Category>(`categories/${categoryId}`, {
     method: "PATCH",
     body: JSON.stringify(data),
   }, getAuthToken())
 }
 
-export async function deleteCategory(categoryId: string): Promise<void> {
+export async function deleteCategory(categoryId: number): Promise<void> {
   return apiRequest(`categories/${categoryId}`, {
     method: "DELETE",
   }, getAuthToken())
 }
 
 export async function createPost(
-  blogId: string,
   data: {
-    title: string
-    content: string
-    category_id: string
-  },
+    title: string;
+    content: string;
+    description: string;
+    main_image_url?: string;
+    category_id: string;
+    secret: 0 | 1;
+    protected: 0 | 1;
+    password?: string;
+    comments_enabled: 0 | 1;
+    images?: string[]
+    problem_numbers: number[];
+  }
 ): Promise<Post> {
-  return apiRequest<Post>(`/blogs/${blogId}/posts/`, {
-    method: "POST",
-    body: JSON.stringify(data),
-  })
+  return apiRequest<Post>(
+    `articles/create`,
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    },
+    getAuthToken()
+  );
 }
 
-export async function fetchPosts(
+export async function fetchPostsByKeywords(
   params: {
-    skip?: number
-    limit?: number
-    search?: string
-    category_id?: string
-    sort_by?: string
-    order?: "asc" | "desc"
-  } = {},
-): Promise<Post[]> {
-  const queryParams = new URLSearchParams()
-
-  if (params.skip !== undefined) queryParams.set("skip", params.skip.toString())
-  if (params.limit !== undefined) queryParams.set("limit", params.limit.toString())
-  if (params.search) queryParams.set("search", params.search)
-  if (params.category_id) queryParams.set("category_id", params.category_id)
-  if (params.sort_by) queryParams.set("sort_by", params.sort_by)
-  if (params.order) queryParams.set("order", params.order)
-
-  const queryString = queryParams.toString() ? `?${queryParams.toString()}` : ""
-
+    searching_words: string;
+    page?: number;
+    per_page?: number;
+    sort_by?: "latest" | "likes" | "views";
+  }
+): Promise<PaginatedArticleListResponse> {
+  const { searching_words, page = 1, per_page = 2, sort_by = "latest" } = params;
+  const queryParams = new URLSearchParams();
+  queryParams.set("page", page.toString());
+  queryParams.set("per_page", per_page.toString());
+  queryParams.set("sort_by", sort_by);
+  const queryString = queryParams.toString() ? `?${queryParams.toString()}` : "";
+  
   try {
-    return await apiRequest<Post[]>(`/posts/${queryString}`)
+    return await apiRequest<PaginatedArticleListResponse>(`articles/search/${searching_words}${queryString}`);
   } catch (error) {
-    console.error("Failed to fetch posts:", error)
-    // Return mock data as fallback
-    return [
-      {
-        id: "1",
-        title: "Sample Post 1",
-        content: "This is a sample post content.",
-        blog_id: "1",
-        category_id: "1",
-        author_id: "1",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: "2",
-        title: "Sample Post 2",
-        content: "This is another sample post content.",
-        blog_id: "1",
-        category_id: "2",
-        author_id: "1",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    ]
+    console.error("Failed to fetch posts:", error);
+    throw error;
   }
 }
 
-export async function fetchPost(blogId: string, postId: string): Promise<Post> {
-  return apiRequest<Post>(`/blogs/${blogId}/posts/${postId}`)
+export async function fetchPostsByProblemNumber(
+  params: {
+    problem_number: number;
+    page?: number;
+    per_page?: number;
+    sort_by?: "latest" | "likes" | "views";
+  }
+): Promise<PaginatedArticleListResponse> {
+  const { problem_number, page = 1, per_page = 2, sort_by = "latest" } = params;
+  const queryParams = new URLSearchParams();
+  queryParams.set("page", page.toString());
+  queryParams.set("per_page", per_page.toString());
+  queryParams.set("sort_by", sort_by);
+  const queryString = queryParams.toString() ? `?${queryParams.toString()}` : "";
+  
+  try {
+    return await apiRequest<PaginatedArticleListResponse>(`articles/problems/${problem_number}${queryString}`);
+  } catch (error) {
+    console.error("Failed to fetch posts by problem number:", error);
+    throw error;
+  }
+}
+
+
+export async function fetchPost(postId: number): Promise<Post> {
+  return apiRequest<Post>(`articles/get/${postId}`)
 }
 
 export async function updatePost(
-  blogId: string,
   postId: string,
   data: {
     title?: string
     content?: string
+    description?: string
     category_id?: string
   },
 ): Promise<Post> {
-  return apiRequest<Post>(`/blogs/${blogId}/posts/${postId}`, {
+  return apiRequest<Post>(`articles/update/${postId}`, {
     method: "PUT",
     body: JSON.stringify(data),
-  })
+  }, getAuthToken())
 }
 
-export async function deletePost(blogId: string, postId: string): Promise<void> {
+export async function deletePost(blogId: number, postId: number): Promise<void> {
   return apiRequest(`/blogs/${blogId}/posts/${postId}`, {
     method: "DELETE",
   })
 }
 
-export async function likePost(blogId: string, postId: string): Promise<void> {
-  return apiRequest(`/blogs/${blogId}/posts/${postId}/like`, {
+export async function likePost(data: {
+  article_id: number
+},): Promise<void> {
+  return apiRequest(`likes/create`, {
     method: "POST",
-  })
+    body: JSON.stringify(data),
+  }, getAuthToken())
 }
 
-export async function unlikePost(blogId: string, postId: string): Promise<void> {
-  return apiRequest(`/blogs/${blogId}/posts/${postId}/unlike`, {
-    method: "POST",
-  })
+export async function unlikePost(postId: number): Promise<void> {
+  return apiRequest(`likes/${postId}`, {
+    method: "DELETE",
+  }, getAuthToken())
+}
+
+export async function getLike(postId: number): Promise<boolean>{
+  return apiRequest('likes/blog/press_like/${postId}', {
+    method: "GET"
+  }, getAuthToken())
 }
 

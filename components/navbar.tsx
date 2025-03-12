@@ -1,30 +1,29 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { cn } from "@/lib/utils"
-import { Home, User, LogIn, LogOut, Settings, FileText, Folder } from "lucide-react"
+import { Home, User, LogIn, LogOut, Settings, FileText, Folder, BookOpen, ChevronDown, PenSquare } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { logout } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 export function Navbar() {
   const pathname = usePathname()
+  const router = useRouter()
   const { user, setUser, isLoading } = useAuth()
   const { toast } = useToast()
 
-  // handleLogout 함수를 수정합니다
   const handleLogout = async () => {
     try {
-        const accessToken = localStorage.getItem("access_token");
-        const refreshToken = localStorage.getItem("refresh_token");
-
+      const accessToken = localStorage.getItem("access_token");
+      const refreshToken = localStorage.getItem("refresh_token");
       if (!accessToken||!refreshToken) {
         throw new Error("No access token found. You may already be logged out.");
       }
-
       await logout(refreshToken)
       setUser(null)
       toast({
@@ -39,6 +38,10 @@ export function Navbar() {
         variant: "destructive",
       })
     }
+  }
+
+  const handleWritePost = () => {
+    router.push("/create-post")
   }
 
   return (
@@ -61,36 +64,42 @@ export function Navbar() {
             </Link>
             {!isLoading && user && (
               <>
-                <Link
-                  href="/blog/posts"
-                  className={cn(
-                    "flex items-center text-sm font-medium transition-colors hover:text-foreground/80",
-                    pathname?.startsWith("/blog/posts") ? "text-foreground" : "text-foreground/60",
-                  )}
-                >
-                  <FileText className="mr-1 h-4 w-4" />
-                  Posts
-                </Link>
-                <Link
-                  href="/blog/categories"
-                  className={cn(
-                    "flex items-center text-sm font-medium transition-colors hover:text-foreground/80",
-                    pathname?.startsWith("/blog/categories") ? "text-foreground" : "text-foreground/60",
-                  )}
-                >
-                  <Folder className="mr-1 h-4 w-4" />
-                  Categories
-                </Link>
-                <Link
-                  href="/blog/settings"
-                  className={cn(
-                    "flex items-center text-sm font-medium transition-colors hover:text-foreground/80",
-                    pathname?.startsWith("/blog/settings") ? "text-foreground" : "text-foreground/60",
-                  )}
-                >
-                  <Settings className="mr-1 h-4 w-4" />
-                  Blog Settings
-                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="flex items-center text-sm font-medium transition-colors hover:text-foreground/80"
+                    >
+                      <BookOpen className="mr-1 h-4 w-4" />
+                      My Blog
+                      <ChevronDown className="ml-1 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem asChild>
+                      <Link href="/blog/settings" className="flex items-center">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Blog Settings
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/blog/categories" className="flex items-center">
+                        <Folder className="mr-2 h-4 w-4" />
+                        Categories
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/blog/posts" className="flex items-center">
+                        <FileText className="mr-2 h-4 w-4" />
+                        Posts
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button variant="default" size="sm" onClick={handleWritePost} className="flex items-center gap-1 mt-1">
+                  <PenSquare className="h-4 w-4" />
+                  Write Post
+                </Button>
                 <Link
                   href="/profile"
                   className={cn(
@@ -98,8 +107,6 @@ export function Navbar() {
                     pathname?.startsWith("/profile") ? "text-foreground" : "text-foreground/60",
                   )}
                 >
-                  <User className="mr-1 h-4 w-4" />
-                  Profile
                 </Link>
               </>
             )}

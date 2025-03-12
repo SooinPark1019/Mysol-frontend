@@ -1,11 +1,11 @@
 export interface User {
-  id: string
+  id: number
   username: string
   email: string
 }
 
 export interface Blog {
-  id: string
+  id: number
   blog_name: string
   description: string
   main_image_url: string
@@ -14,18 +14,41 @@ export interface Blog {
 }
 
 export interface Category {
-  id: string
+  id: number
   name: string
 }
 
 export interface Post {
-  id: string
-  title: string
-  content: string
-  blog_id: string
-  category_id: string
-  author_id: string
-  created_at: string
-  updated_at: string
+  id: number;
+  title: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  views: number;
+  article_likes: number;
+  article_comments: number;
+  protected: number;
+  comments_enabled: number;
+  secret: number;
+  problem_numbers: number[];
+  blog_id: number;
+  blog_name: string;
+  category_id: number;
 }
 
+export interface PaginatedArticleListResponse {
+  page: number;
+  per_page: number;
+  total_count: number;
+  articles: Post[];
+}
+
+export interface Comment {
+  id: number
+  user_name: string
+  content: string
+  created_at: string
+  updated_at: string
+  secret: number
+  user_blog_id:number
+}

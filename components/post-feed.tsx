@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { PostCard } from "@/components/post-card"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
-import { fetchPosts } from "@/lib/api"
-import type { Post } from "@/types/blog"
+import { fetchPostsByKeywords, fetchPostsByProblemNumber } from "@/lib/api"
+import type { Post, PaginatedArticleListResponse } from "@/types/blog"
 
 interface PostFeedProps {
   blogId?: string
@@ -20,30 +20,47 @@ export function PostFeed({ blogId }: PostFeedProps) {
   const [hasMore, setHasMore] = useState(true)
   const { toast } = useToast()
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const limit = 10
-  const search = ""
-  const categoryId = ""
-  const sortBy = "created_at"
-  const order = "desc"
+
+  // URL query parameters로부터 값을 읽어옴
+  const mode = searchParams.get("mode") || "keyword"
+  const keywordParam = searchParams.get("keyword") || ""
+  const problemParam = searchParams.get("problem_number")
+  const sortParam = searchParams.get("sort_by")
+  // "recent"를 "latest"로 매핑하고 기본값은 "latest"
+  const sortBy: "latest" | "likes" | "views" =
+    sortParam === "recent" ? "latest" : ((sortParam as "latest" | "likes" | "views") || "latest")
 
   useEffect(() => {
     const loadPosts = async () => {
       try {
         setLoading(true)
         setError(null)
-        const data = await fetchPosts({
-          skip: (page - 1) * limit,
-          limit,
-          search,
-          category_id: categoryId,
-          sort_by: sortBy,
-          order,
-        })
-        if (data.length === 0) {
+        let data: PaginatedArticleListResponse
+        if (mode === "problem" && problemParam) {
+          const problem_number = parseInt(problemParam)
+          data = await fetchPostsByProblemNumber({
+            problem_number,
+            page,
+            per_page: limit,
+            sort_by: sortBy,
+          })
+        } else {
+          data = await fetchPostsByKeywords({
+            searching_words: keywordParam,
+            page,
+            per_page: limit,
+            sort_by: sortBy,
+          })
+        }
+        if (data.articles.length === 0) {
           setHasMore(false)
         } else {
-          setPosts((prev) => (prev && page !== 1 ? [...prev, ...data] : data))
+          setPosts((prev) =>
+            prev && page !== 1 ? [...prev, ...data.articles] : data.articles
+          )
         }
       } catch (error) {
         console.error("Failed to load posts:", error)
@@ -59,7 +76,7 @@ export function PostFeed({ blogId }: PostFeedProps) {
     }
 
     loadPosts()
-  }, [blogId, page, search, categoryId, sortBy, order, toast, router])
+  }, [blogId, page, mode, keywordParam, problemParam, sortBy, toast, router])
 
   const loadMore = () => {
     setPage((prev) => prev + 1)
@@ -79,10 +96,7 @@ export function PostFeed({ blogId }: PostFeedProps) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <h3 className="text-lg font-semibold">No posts found</h3>
-        <p className="text-muted-foreground mt-2">
-          {error ? "Using sample data. " : ""}
-          Be the first to create a post in this blog!
-        </p>
+        <p className="text-muted-foreground mt-2">Be the first to create a post!</p>
       </div>
     )
   }
@@ -110,4 +124,3 @@ export function PostFeed({ blogId }: PostFeedProps) {
     </div>
   )
 }
-

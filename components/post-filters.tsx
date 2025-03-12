@@ -5,24 +5,27 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 export function PostFilters() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [searchType, setSearchType] = useState<"keyword" | "problem">("keyword")
-  const [keyword, setKeyword] = useState("")
+  const [keyword, setKeyword] = useState("BOJ")
   const [problemNumber, setProblemNumber] = useState("")
   const [sortBy, setSortBy] = useState("recent")
 
   useEffect(() => {
-    // Initialize filters from URL
+    // URL에서 필터 값 초기화
     const keywordParam = searchParams.get("keyword")
     const problemParam = searchParams.get("problem_number")
     const sortParam = searchParams.get("sort_by")
+    const modeParam = searchParams.get("mode")
 
-    if (keywordParam) {
+    if (modeParam) {
+      setSearchType(modeParam as "keyword" | "problem")
+    } else if (keywordParam) {
       setSearchType("keyword")
       setKeyword(keywordParam)
     } else if (problemParam) {
@@ -34,6 +37,9 @@ export function PostFilters() {
 
   const applyFilters = () => {
     const params = new URLSearchParams()
+
+    // mode 파라미터를 명시적으로 추가
+    params.set("mode", searchType)
 
     if (searchType === "keyword" && keyword) {
       params.set("keyword", keyword)
@@ -47,7 +53,7 @@ export function PostFilters() {
 
   const resetFilters = () => {
     setSearchType("keyword")
-    setKeyword("")
+    setKeyword("BOJ")
     setProblemNumber("")
     setSortBy("recent")
     router.push(``)
@@ -116,4 +122,3 @@ export function PostFilters() {
     </div>
   )
 }
-
