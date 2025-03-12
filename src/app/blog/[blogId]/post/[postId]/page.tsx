@@ -10,10 +10,12 @@ interface PostPageProps {
 }
 
 export default function PostPage({ params }: PostPageProps) {
-  const blogId = Number(params.blogId)
-  const postId = Number(params.postId)
+  // 타입 단언을 사용하여 params를 우리가 원하는 타입으로 캐스팅
+  const { blogId, postId } = params as { blogId: string; postId: string }
+  const blogIdNum = Number(blogId)
+  const postIdNum = Number(postId)
 
-  if (isNaN(blogId) || isNaN(postId)) {
+  if (isNaN(blogIdNum) || isNaN(postIdNum)) {
     return (
       <div className="flex min-h-screen flex-col">
         <main className="flex-1 container py-6 md:py-12">
@@ -29,7 +31,7 @@ export default function PostPage({ params }: PostPageProps) {
     <div className="flex min-h-screen flex-col">
       <main className="flex-1 container py-6 md:py-12">
         <Suspense fallback={<PostDetailSkeleton />}>
-          <PostDetail blogId={blogId} postId={postId} />
+          <PostDetail blogId={blogIdNum} postId={postIdNum} />
         </Suspense>
       </main>
     </div>
