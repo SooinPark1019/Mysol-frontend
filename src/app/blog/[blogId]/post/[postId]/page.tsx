@@ -1,3 +1,5 @@
+"use client"
+
 import { Suspense } from "react"
 import { PostDetail } from "@/components/post-detail"
 import { PostDetailSkeleton } from "@/components/post-detail-skeleton"
