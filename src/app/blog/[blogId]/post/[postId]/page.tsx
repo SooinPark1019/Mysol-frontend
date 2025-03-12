@@ -1,4 +1,4 @@
-"use client"
+"use client"  // 이 줄을 반드시 최상단에 추가
 
 import { Suspense } from "react"
 import { PostDetail } from "@/components/post-detail"
@@ -12,7 +12,7 @@ interface PostPageProps {
 }
 
 export default function PostPage({ params }: PostPageProps) {
-  // 타입 단언을 사용하여 params를 우리가 원하는 타입으로 캐스팅
+  // params를 단언하여 우리가 원하는 타입으로 사용
   const { blogId, postId } = params as { blogId: string; postId: string }
   const blogIdNum = Number(blogId)
   const postIdNum = Number(postId)
