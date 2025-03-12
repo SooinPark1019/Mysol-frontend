@@ -1,21 +1,19 @@
-"use client"  // 이 줄을 반드시 최상단에 추가
+"use client" // 이 줄은 최상단에 유지
 
 import { Suspense } from "react"
 import { PostDetail } from "@/components/post-detail"
 import { PostDetailSkeleton } from "@/components/post-detail-skeleton"
 
+// params를 Promise로 감싼 인터페이스 정의
 interface PostPageProps {
-  params: {
-    blogId: string
-    postId: string
-  }
+  params: Promise<{ blogId: string; postId: string }>;
 }
 
-export default function PostPage({ params }: PostPageProps) {
-  // params를 단언하여 우리가 원하는 타입으로 사용
-  const { blogId, postId } = params as { blogId: string; postId: string }
-  const blogIdNum = Number(blogId)
-  const postIdNum = Number(postId)
+// 비동기 함수로 변경하고 params를 await로 풀기
+export default async function PostPage({ params }: PostPageProps) {
+  const { blogId, postId } = await params; // Promise를 풀어서 실제 값 추출
+  const blogIdNum = Number(blogId);
+  const postIdNum = Number(postId);
 
   if (isNaN(blogIdNum) || isNaN(postIdNum)) {
     return (
@@ -26,7 +24,7 @@ export default function PostPage({ params }: PostPageProps) {
           </h2>
         </main>
       </div>
-    )
+    );
   }
 
   return (
@@ -37,5 +35,5 @@ export default function PostPage({ params }: PostPageProps) {
         </Suspense>
       </main>
     </div>
-  )
+  );
 }
