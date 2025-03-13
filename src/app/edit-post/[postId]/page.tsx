@@ -4,10 +4,9 @@ import PostEditor from "@/components/post-editor";
 export default async function EditPostPageWrapper({
   params,
 }: {
-  // params가 Promise일 수도 있으므로 union 타입으로 처리합니다.
   params: { postId: string } | Promise<{ postId: string }>;
 }) {
-  // params가 Promise가 아닐 경우 await는 즉시 resolve됩니다.
-  const { postId } = await params;
-  return <PostEditor postId={postId} />;
+  // params가 Promise가 아니더라도 Promise.resolve()를 사용해 Promise로 감싸줍니다.
+  const resolvedParams = await Promise.resolve(params as Promise<{ postId: string }>);
+  return <PostEditor postId={resolvedParams.postId} />;
 }
