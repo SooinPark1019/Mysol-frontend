@@ -24,12 +24,11 @@ export function PostFeed({ blogId }: PostFeedProps) {
 
   const limit = 10
 
-  // URL query parameters로부터 값을 읽어옴
+  // URL query parameters
   const mode = searchParams.get("mode") || "keyword"
   const keywordParam = searchParams.get("keyword") || ""
   const problemParam = searchParams.get("problem_number")
   const sortParam = searchParams.get("sort_by")
-  // "recent"를 "latest"로 매핑하고 기본값은 "latest"
   const sortBy: "latest" | "likes" | "views" =
     sortParam === "recent" ? "latest" : ((sortParam as "latest" | "likes" | "views") || "latest")
 
@@ -38,6 +37,7 @@ export function PostFeed({ blogId }: PostFeedProps) {
       try {
         setLoading(true)
         setError(null)
+
         let data: PaginatedArticleListResponse
         if (mode === "problem" && problemParam) {
           const problem_number = parseInt(problemParam)
@@ -55,21 +55,21 @@ export function PostFeed({ blogId }: PostFeedProps) {
             sort_by: sortBy,
           })
         }
+
         if (data.articles.length === 0) {
           setHasMore(false)
-        } else {
-          setPosts((prev) =>
-            prev && page !== 1 ? [...prev, ...data.articles] : data.articles
-          )
         }
+
+        // 새 데이터 누적
+        setPosts((prev) =>
+          prev && page !== 1 ? [...prev, ...data.articles] : data.articles
+        )
       } catch (error) {
         console.error("Failed to load posts:", error)
-        setError("Failed to load posts. Using sample data.")
-        toast({
-          title: "Notice",
-          description: "Using sample data while we connect to the server.",
-          variant: "default",
-        })
+        // ❌ 에러 메시지나 샘플 데이터 대신 posts를 빈 배열로 설정
+        setPosts([])
+        setHasMore(false)
+        // setError("Failed to load posts") // 필요하면 간단한 에러 state만 유지
       } finally {
         setLoading(false)
       }
@@ -82,6 +82,7 @@ export function PostFeed({ blogId }: PostFeedProps) {
     setPage((prev) => prev + 1)
   }
 
+  // 로딩 중이면서 아직 posts가 없는 경우 → 스켈레톤 표시
   if (loading && !posts) {
     return (
       <div className="space-y-6">
@@ -92,6 +93,7 @@ export function PostFeed({ blogId }: PostFeedProps) {
     )
   }
 
+  // 포스트가 없는 경우 (에러 or 검색 결과 없음) → "No posts found"
   if (!posts || posts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -103,12 +105,13 @@ export function PostFeed({ blogId }: PostFeedProps) {
 
   return (
     <div className="space-y-6">
+      {/* 필요하다면 에러 표시 부분도 추가 가능
       {error && (
         <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
           <p className="font-bold">Notice</p>
           <p>{error}</p>
         </div>
-      )}
+      )} */}
       <div className="grid gap-6">
         {posts.map((post) => (
           <PostCard key={post.id} post={post} />
