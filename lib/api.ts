@@ -370,7 +370,7 @@ export async function unlikePost(postId: number): Promise<void> {
 }
 
 export async function getLike(postId: number): Promise<boolean>{
-  return apiRequest('likes/blog/press_like/${postId}', {
+  return apiRequest(`likes/blog/press_like/${postId}`, {
     method: "GET"
   }, getAuthToken())
 }
