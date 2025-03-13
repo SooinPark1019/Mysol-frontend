@@ -271,31 +271,88 @@ export async function fetchPostsByProblemNumber(
   }
 }
 
-
 export async function fetchPost(postId: number): Promise<Post> {
   return apiRequest<Post>(`articles/get/${postId}`)
 }
 
-export async function updatePost(
-  postId: string,
-  data: {
-    title?: string
-    content?: string
-    description?: string
-    category_id?: string
-  },
-): Promise<Post> {
-  return apiRequest<Post>(`articles/update/${postId}`, {
-    method: "PUT",
-    body: JSON.stringify(data),
-  }, getAuthToken())
+export async function fetchPostFromBlog(
+  blogId: number,
+  page: number = 1
+): Promise<PaginatedArticleListResponse> {
+  const queryParams = new URLSearchParams();
+  queryParams.set("page", page.toString());
+  const queryString = queryParams.toString() ? `?${queryParams.toString()}` : "";
+
+  try {
+    return await apiRequest<PaginatedArticleListResponse>(`articles/blogs/${blogId}${queryString}`, {}, getAuthToken());
+  } catch (error) {
+    console.error("Failed to fetch posts from blog:", error);
+    throw error;
+  }
 }
 
-export async function deletePost(blogId: number, postId: number): Promise<void> {
-  return apiRequest(`/blogs/${blogId}/posts/${postId}`, {
-    method: "DELETE",
-  })
+export async function fetchPostsInCategory(
+  blogId: number,
+  categoryId: number,
+  page: number = 1
+): Promise<PaginatedArticleListResponse> {
+  const queryParams = new URLSearchParams();
+  queryParams.set("page", page.toString());
+  const queryString = queryParams.toString() ? `?${queryParams.toString()}` : "";
+  
+  try {
+    return await apiRequest<PaginatedArticleListResponse>(
+      `articles/blogs/${blogId}/categories/${categoryId}${queryString}`,
+      {},
+      getAuthToken()
+    );
+  } catch (error) {
+    console.error("Failed to fetch posts in category:", error);
+    throw error;
+  }
 }
+
+export async function deletePost(articleId: number): Promise<void> {
+  try {
+    await apiRequest<void>(`articles/delete/${articleId}`, {
+      method: "DELETE",
+    }, getAuthToken());
+  } catch (error) {
+    console.error(`Failed to delete post (ID: ${articleId}):`, error);
+    throw error;
+  }
+}
+
+export async function updatePost(
+  postId: number,
+  data: {
+    title?: string;
+    content?: string;
+    description?: string;
+    category_id?: number;
+    secret?: 0 | 1;
+    protected?: 0 | 1;
+    password?: string;
+    comments_enabled?: 0 | 1;
+    problem_numbers?: number[];
+  }
+): Promise<Post> {
+  try {
+    // protected가 0이면 password를 null로 설정
+    if (data.protected === 0) {
+      delete data.password;
+    }
+
+    return await apiRequest<Post>(`articles/update/${postId}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }, getAuthToken());
+  } catch (error) {
+    console.error(`Failed to update post (ID: ${postId}):`, error);
+    throw error;
+  }
+}
+
 
 export async function likePost(data: {
   article_id: number
