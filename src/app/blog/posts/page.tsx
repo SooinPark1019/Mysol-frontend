@@ -37,19 +37,19 @@ export default function PostManagementPage() {
 
   const limit = 10;
 
-  // 데이터를 새로 불러오는 함수
-  const loadPosts = async (pageNum: number, category?: number) => {
+  // 데이터를 새로 불러오는 함수 (전체 또는 특정 카테고리)
+  const loadPosts = async (pageNum: number, categoryId?: number) => {
     try {
       let postsData;
-      if (category === undefined) {
+      if (categoryId === undefined) {
         // 전체 게시글 불러오기
         postsData = await fetchPostFromBlog(blog!.id, pageNum);
       } else {
         // 특정 카테고리 게시글 불러오기
-        postsData = await fetchPostsInCategory(blog!.id, category, pageNum);
+        postsData = await fetchPostsInCategory(blog!.id, categoryId, pageNum);
       }
       // 페이지 1이면 기존 데이터 덮어쓰기, 아니면 추가
-      setPosts((prev) => (pageNum === 1 ? postsData.articles : [...prev, ...postsData.articles]));
+      setPosts(pageNum === 1 ? postsData.articles : [...posts, ...postsData.articles]);
       if (postsData.articles.length < limit) {
         setHasMore(false);
       } else {
@@ -65,18 +65,18 @@ export default function PostManagementPage() {
     }
   };
 
-  // 초기 데이터 로드: 내 블로그 정보, 카테고리, 게시글
+  // 초기 데이터 로드: 내 블로그 정보, 카테고리, 전체 게시글
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
-        // 내 블로그 정보 가져오기
         const blogData = await fetchmyBlog();
         setBlog(blogData);
-        // 내 블로그의 카테고리 가져오기
+
         const categoriesData = await fetchCategories(blogData.id);
         setCategories(categoriesData);
-        // 전체 게시글 불러오기 (activeCategory === "all")
+
+        // 전체 게시글 로드 (전체 탭)
         await loadPosts(1);
       } catch (error) {
         console.error("Failed to load data:", error);
@@ -93,7 +93,7 @@ export default function PostManagementPage() {
     loadData();
   }, [toast]);
 
-  // activeCategory가 변경될 때, 페이지 1부터 다시 불러옴
+  // activeCategory가 변경되면, 페이지 1부터 다시 불러오기 (백엔드 API 호출)
   useEffect(() => {
     if (!blog) return;
     setPage(1);
@@ -121,7 +121,6 @@ export default function PostManagementPage() {
     try {
       setIsDeleting(true);
       await deletePost(postToDelete);
-
       setPosts(posts.filter((post) => post.id !== postToDelete));
       toast({
         title: "Post deleted",
@@ -167,28 +166,44 @@ export default function PostManagementPage() {
         <Button onClick={() => router.push("/create-post")}>Create New Post</Button>
       </div>
 
-      {posts.length === 0 ? (
-        <div className="text-center py-12 bg-muted rounded-lg">
-          <h3 className="text-lg font-medium mb-2">You haven't created any posts yet</h3>
-          <p className="text-muted-foreground mb-4">Start sharing your knowledge with the community</p>
-          <Button onClick={() => router.push("/create-post")}>Create Your First Post</Button>
-        </div>
-      ) : (
-        <>
-          <Tabs defaultValue="all" value={activeCategory} onValueChange={setActiveCategory} className="mb-6">
-            <TabsList className="mb-4">
-              <TabsTrigger value="all">All Posts</TabsTrigger>
-              {categories.map((category) => (
-                <TabsTrigger key={category.id} value={category.id.toString()}>
-                  {category.name}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+      <Tabs defaultValue="all" value={activeCategory} onValueChange={setActiveCategory} className="mb-6">
+        <TabsList className="mb-4">
+          <TabsTrigger value="all">All Posts</TabsTrigger>
+          {categories.map((category) => (
+            <TabsTrigger key={category.id} value={category.id.toString()}>
+              {category.name}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-            {/* All Posts 탭 */}
-            <TabsContent value="all" className="mt-0">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {posts.map((post) => (
+        {/* All Posts 탭 콘텐츠 */}
+        <TabsContent value="all" className="mt-0">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {posts.length > 0 ? (
+              posts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  categories={categories}
+                  onView={() => handleViewPost(post.id)}
+                  onEdit={() => handleEditPost(post.id)}
+                  onDelete={() => setPostToDelete(post.id)}
+                />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8">
+                <p>No posts found</p>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* 각 카테고리별 탭 콘텐츠 */}
+        {categories.map((category) => (
+          <TabsContent key={category.id} value={category.id.toString()} className="mt-0">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {posts.length > 0 ? (
+                posts.map((post) => (
                   <PostCard
                     key={post.id}
                     post={post}
@@ -197,36 +212,16 @@ export default function PostManagementPage() {
                     onEdit={() => handleEditPost(post.id)}
                     onDelete={() => setPostToDelete(post.id)}
                   />
-                ))}
-              </div>
-            </TabsContent>
-
-            {/* 각 카테고리별 탭 */}
-            {categories.map((category) => (
-              <TabsContent key={category.id} value={category.id.toString()} className="mt-0">
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {posts.filter((post) => post.category_id === category.id).length > 0 ? (
-                    posts.filter((post) => post.category_id === category.id).map((post) => (
-                      <PostCard
-                        key={post.id}
-                        post={post}
-                        categories={categories}
-                        onView={() => handleViewPost(post.id)}
-                        onEdit={() => handleEditPost(post.id)}
-                        onDelete={() => setPostToDelete(post.id)}
-                      />
-                    ))
-                  ) : (
-                    <div className="col-span-full text-center py-8">
-                      <p>No posts in this category</p>
-                    </div>
-                  )}
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8">
+                  <p>No posts in this category</p>
                 </div>
-              </TabsContent>
-            ))}
-          </Tabs>
-        </>
-      )}
+              )}
+            </div>
+          </TabsContent>
+        ))}
+      </Tabs>
 
       <AlertDialog open={postToDelete !== null} onOpenChange={(open) => !open && setPostToDelete(null)}>
         <AlertDialogContent>
