@@ -126,6 +126,14 @@ export async function refreshToken(refreshToken: string): Promise<{ access_token
   }, undefined, false); // 🔹 Refresh 요청은 자체적으로 다시 refreshToken을 호출하지 않도록 함
 }
 
+export async function updateUser(data: {username: string}): Promise<User> {
+  return apiRequest<User>("users/me",
+    {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }, getAuthToken());
+}
+
 /**
  * 현재 사용자 정보 가져오기 (JWT 토큰 필요)
  */
