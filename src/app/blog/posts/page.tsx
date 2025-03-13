@@ -57,15 +57,9 @@ export default function PostManagementPage() {
       }
     } catch (error) {
       console.error("Failed to load posts:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load posts. Please try again.",
-        variant: "destructive",
-      });
     }
   };
 
-  // 초기 데이터 로드: 내 블로그 정보, 카테고리, 전체 게시글
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -93,7 +87,6 @@ export default function PostManagementPage() {
     loadData();
   }, [toast]);
 
-  // activeCategory가 변경되면, 페이지 1부터 다시 불러오기 (백엔드 API 호출)
   useEffect(() => {
     if (!blog) return;
     setPage(1);
@@ -176,7 +169,6 @@ export default function PostManagementPage() {
           ))}
         </TabsList>
 
-        {/* All Posts 탭 콘텐츠 */}
         <TabsContent value="all" className="mt-0">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {posts.length > 0 ? (
@@ -198,7 +190,6 @@ export default function PostManagementPage() {
           </div>
         </TabsContent>
 
-        {/* 각 카테고리별 탭 콘텐츠 */}
         {categories.map((category) => (
           <TabsContent key={category.id} value={category.id.toString()} className="mt-0">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -264,9 +255,17 @@ function PostCard({ post, categories, onView, onEdit, onDelete }: PostCardProps)
         <CardTitle className="line-clamp-2 text-lg">{post.title}</CardTitle>
       </CardHeader>
       <CardFooter className="p-4 pt-0 flex justify-between">
-        <Button variant="ghost" size="sm" onClick={onView}>
-          <Eye className="h-4 w-4 mr-1" /> View
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="ghost" size="sm" onClick={onView}>
+            <Eye className="h-4 w-4 mr-1" /> View
+          </Button>
+          <Button variant="outline" size="sm" onClick={onEdit}>
+            <Pencil className="h-4 w-4 mr-1" /> Edit
+          </Button>
+          <Button variant="outline" size="sm" onClick={onDelete} className="text-destructive">
+            <Trash2 className="h-4 w-4 mr-1" /> Delete
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   );
