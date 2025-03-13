@@ -52,16 +52,6 @@ export function Navbar() {
             <span className="font-bold text-xl">EditorialHub</span>
           </Link>
           <nav className="hidden md:flex gap-6">
-            <Link
-              href="/"
-              className={cn(
-                "flex items-center text-sm font-medium transition-colors hover:text-foreground/80",
-                pathname === "/" ? "text-foreground" : "text-foreground/60",
-              )}
-            >
-              <Home className="mr-1 h-4 w-4" />
-              Home
-            </Link>
             {!isLoading && user && (
               <>
                 <DropdownMenu>
