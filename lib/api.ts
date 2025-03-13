@@ -28,26 +28,36 @@ async function apiRequest<T>(
   });
 
   if (response.status === 401) {
-    console.warn("Access token expired. Attempting to refresh...");
+    console.warn("Access token expired or unauthorized. Attempting to refresh...");
 
     const refreshTokenStr = localStorage.getItem("refresh_token");
 
+    // refreshTokenStr가 있고, retry 가능, 그리고 현재 refresh 요청 중이 아니면 재발급 시도
     if (refreshTokenStr && retry && !isRefreshing) {
-      isRefreshing = true; // 🔹 Refresh 요청 중 상태로 변경
+      isRefreshing = true;
       try {
         const { access_token, refresh_token } = await refreshToken(refreshTokenStr);
         localStorage.setItem("access_token", access_token);
         localStorage.setItem("refresh_token", refresh_token);
-        isRefreshing = false; // 🔹 Refresh 완료 후 상태 해제
+        isRefreshing = false;
 
-        // 🔹 새로운 토큰으로 원래 요청을 재시도 (하지만 이번엔 retry=false)
+        // 새 토큰으로 원래 요청을 재시도 (이번엔 retry=false)
         return apiRequest<T>(endpoint, options, access_token, false);
+
       } catch (error) {
         console.error("Failed to refresh token:", error);
-        isRefreshing = false; // 🔹 실패 시 상태 해제
+        isRefreshing = false;
+
+        // 🔹 Refresh Token도 만료되었거나 재발급 실패 → 토큰 제거
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+
         throw new Error("Session expired. Please log in again.");
       }
     } else {
+      // refreshToken이 없거나, 이미 retry=false 등
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
       throw new Error("Session expired. Please log in again.");
     }
   }
@@ -58,11 +68,13 @@ async function apiRequest<T>(
   }
 
   if (response.status === 204) {
+    // No Content
     return null as T;
   }
 
   return response.json();
 }
+
 
 function getAuthToken(): string {
   const authToken = localStorage.getItem("access_token");

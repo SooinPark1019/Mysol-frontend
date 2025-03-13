@@ -46,6 +46,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(refreshedUser);
         } catch (refreshError) {
           console.error("Failed to refresh token:", refreshError);
+          // 🔹 Refresh Token 만료 시 → 로그아웃
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("refresh_token");
           setUser(null);
         }
       } finally {
@@ -62,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     </AuthContext.Provider>
   );
 }
+
 
 export function useAuth() {
   const context = useContext(AuthContext);
