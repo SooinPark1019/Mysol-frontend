@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReactMarkdown from "react-markdown";
@@ -9,6 +9,7 @@ import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "katex/dist/katex.min.css";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import "highlight.js/styles/github-dark.css";
 
 interface MarkdownEditorProps {
@@ -18,7 +19,12 @@ interface MarkdownEditorProps {
 
 export function MarkdownEditor({ value, onChange }: MarkdownEditorProps) {
   const [activeTab, setActiveTab] = useState<string>("write");
+  const [mounted, setMounted] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    setMounted(true); // 추가
+  }, []);
 
   const handleInsertMarkdown = (markdownTemplate: string) => {
     if (!textareaRef.current) return;
@@ -35,6 +41,39 @@ export function MarkdownEditor({ value, onChange }: MarkdownEditorProps) {
     }, 0);
   };
 
+  const handleInsertCodeBlock = (language: string) => {
+    const codeTemplate = `\`\`\`${language}\n// Your code here\n\`\`\`\n`
+
+    if (!textareaRef.current) return
+
+    const textarea = textareaRef.current
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const text = textarea.value
+
+    if (start !== end) {
+      const selectedText = text.substring(start, end)
+      const wrappedCode = `\`\`\`${language}\n${selectedText}\n\`\`\`\n`
+      const newText = text.substring(0, start) + wrappedCode + text.substring(end)
+      onChange(newText)
+
+      setTimeout(() => {
+        textarea.focus()
+        const newPosition = start + wrappedCode.length
+        textarea.setSelectionRange(newPosition, newPosition)
+      }, 0)
+    } else {
+      const newText = text.substring(0, start) + codeTemplate + text.substring(end)
+      onChange(newText)
+
+      setTimeout(() => {
+        textarea.focus()
+        const cursorPosition = start + codeTemplate.indexOf("// Your code here")
+        textarea.setSelectionRange(cursorPosition, cursorPosition + "// Your code here".length)
+      }, 0)
+    }
+  }
+
   return (
     <div className="border rounded-md">
       <Tabs defaultValue="write" value={activeTab} onValueChange={setActiveTab}>
@@ -50,16 +89,18 @@ export function MarkdownEditor({ value, onChange }: MarkdownEditorProps) {
             <Button type="button" variant="outline" size="sm" onClick={() => handleInsertMarkdown("*italic text*")}>
               Italic
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                handleInsertMarkdown("```\nconsole.log('Hello, world!');\n```")
-              }
-            >
-              Code
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button type="button" variant="outline" size="sm" title="Code Block">
+                  Code
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleInsertCodeBlock("javascript")}>JavaScript</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleInsertCodeBlock("python")}>Python</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleInsertCodeBlock("cpp")}>C++</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button type="button" variant="outline" size="sm" onClick={() => handleInsertMarkdown("$E = mc^2$")}>
               Math
             </Button>
