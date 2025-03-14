@@ -32,6 +32,15 @@ export function PostFeed({ blogId }: PostFeedProps) {
   const sortBy: "latest" | "likes" | "views" =
     sortParam === "recent" ? "latest" : ((sortParam as "latest" | "likes" | "views") || "latest")
 
+  // 기본 키워드 설정 (초기 로드 시 keyword가 없으면 'boj'로 설정)
+  useEffect(() => {
+    if (!searchParams.get("keyword")) {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set("keyword", "boj") // 기본 키워드를 'boj'로 설정
+      router.replace(`?${params.toString()}`)
+    }
+  }, [searchParams, router])
+
   useEffect(() => {
     const loadPosts = async () => {
       try {
@@ -49,7 +58,7 @@ export function PostFeed({ blogId }: PostFeedProps) {
           })
         } else {
           data = await fetchPostsByKeywords({
-            searching_words: keywordParam,
+            searching_words: keywordParam || "boj", // 기본 키워드 적용
             page,
             per_page: limit,
             sort_by: sortBy,
@@ -66,23 +75,20 @@ export function PostFeed({ blogId }: PostFeedProps) {
         )
       } catch (error) {
         console.error("Failed to load posts:", error)
-        // ❌ 에러 메시지나 샘플 데이터 대신 posts를 빈 배열로 설정
         setPosts([])
         setHasMore(false)
-        // setError("Failed to load posts") // 필요하면 간단한 에러 state만 유지
       } finally {
         setLoading(false)
       }
     }
 
     loadPosts()
-  }, [blogId, page, mode, keywordParam, problemParam, sortBy, toast, router])
+  }, [blogId, page, mode, keywordParam, problemParam, sortBy])
 
   const loadMore = () => {
     setPage((prev) => prev + 1)
   }
 
-  // 로딩 중이면서 아직 posts가 없는 경우 → 스켈레톤 표시
   if (loading && !posts) {
     return (
       <div className="space-y-6">
@@ -93,7 +99,6 @@ export function PostFeed({ blogId }: PostFeedProps) {
     )
   }
 
-  // 포스트가 없는 경우 (에러 or 검색 결과 없음) → "No posts found"
   if (!posts || posts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -105,13 +110,6 @@ export function PostFeed({ blogId }: PostFeedProps) {
 
   return (
     <div className="space-y-6">
-      {/* 필요하다면 에러 표시 부분도 추가 가능
-      {error && (
-        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
-          <p className="font-bold">Notice</p>
-          <p>{error}</p>
-        </div>
-      )} */}
       <div className="grid gap-6">
         {posts.map((post) => (
           <PostCard key={post.id} post={post} />
