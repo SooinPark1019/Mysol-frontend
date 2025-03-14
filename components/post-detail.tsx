@@ -46,11 +46,6 @@ export function PostDetail({ blogId, postId }: PostDetailProps) {
         setError("This post is protected. Please enter the password.")
       } else {
         setError("Failed to load post. Please try again.")
-        toast({
-          title: "Error",
-          description: "Failed to load post. Please try again.",
-          variant: "destructive",
-        })
       }
     } finally {
       setLoading(false)
