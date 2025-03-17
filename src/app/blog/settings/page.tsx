@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { fetchmyBlog, updateBlog } from "@/lib/api"; // ✅ 블로그 정보 가져오기 및 업데이트 함수 추가
+import { fetchmyBlog, updateBlog } from "@/lib/api";
 import type { Blog } from "@/types/blog";
 
 export default function BlogSettingsPage() {
@@ -19,7 +19,6 @@ export default function BlogSettingsPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  // 🔹 블로그 정보 불러오기
   useEffect(() => {
     const loadBlog = async () => {
       try {
@@ -52,7 +51,6 @@ export default function BlogSettingsPage() {
         description: "Your blog settings have been successfully updated.",
       });
 
-      // ✅ 업데이트 후 페이지 새로고침 (또는 홈으로 이동)
       router.refresh();
     } catch (error) {
       console.error("Failed to update blog settings:", error);

@@ -42,11 +42,9 @@ export default function CreatePostPage() {
 
     const loadBlogAndCategories = async () => {
       try {
-        // 블로그 정보 가져오기
         const blogData = await fetchmyBlog()
         setBlog(blogData)
 
-        // 블로그 ID를 기반으로 카테고리 가져오기
         const categoriesData = await fetchCategories(blogData.id)
         setCategories(categoriesData)
       } catch (error) {
@@ -104,7 +102,6 @@ export default function CreatePostPage() {
         main_image_url: mainImageUrl || undefined,
         category_id: categoryId,
         secret: (isPrivate ? 1 : 0) as 0 | 1,
-        // 보호글과 비밀번호는 표시하지 않고 기본값으로 전달
         protected: 0 as 0 | 1,
         password: undefined,
         images: [],

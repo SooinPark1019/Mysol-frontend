@@ -23,26 +23,20 @@ export function LoginForm() {
     setIsLoading(true);
 
     try {
-      // 🔹 로그인 요청 (JWT 토큰 반환)
       const { access_token, refresh_token} = await login({ email, password });
 
-      // 🔹 토큰 저장 (localStorage)
       localStorage.setItem("access_token", access_token);
       localStorage.setItem("refresh_token", refresh_token);
 
-      // 🔹 로그인 후 사용자 정보 가져오기
       const userData = await getCurrentUser();
 
-      // 🔹 Auth Context에 사용자 정보 저장
       setUser(userData);
 
-      // 🔹 로그인 성공 메시지
       toast({
         title: "Success",
         description: "Successfully logged in.",
       });
 
-      // 🔹 홈으로 이동
       router.push("/");
     } catch (error) {
       console.error("Login failed:", error);

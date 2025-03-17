@@ -37,18 +37,14 @@ export default function PostManagementPage() {
 
   const limit = 10;
 
-  // 데이터를 새로 불러오는 함수 (전체 또는 특정 카테고리)
   const loadPosts = async (pageNum: number, categoryId?: number) => {
     try {
       let postsData;
       if (categoryId === undefined) {
-        // 전체 게시글 불러오기
         postsData = await fetchPostFromBlog(blog!.id, pageNum);
       } else {
-        // 특정 카테고리 게시글 불러오기
         postsData = await fetchPostsInCategory(blog!.id, categoryId, pageNum);
       }
-      // 페이지 1이면 기존 데이터 덮어쓰기, 아니면 추가
       setPosts(pageNum === 1 ? postsData.articles : [...posts, ...postsData.articles]);
       if (postsData.articles.length < limit) {
         setHasMore(false);
@@ -70,7 +66,6 @@ export default function PostManagementPage() {
         const categoriesData = await fetchCategories(blogData.id);
         setCategories(categoriesData);
 
-        // 전체 게시글 로드 (전체 탭)
         await loadPosts(1);
       } catch (error) {
         console.error("Failed to load data:", error);

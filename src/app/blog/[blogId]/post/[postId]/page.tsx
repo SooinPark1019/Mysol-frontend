@@ -1,17 +1,15 @@
-"use client" // 이 줄은 최상단에 유지
+"use client"
 
 import { Suspense } from "react"
 import { PostDetail } from "@/components/post-detail"
 import { PostDetailSkeleton } from "@/components/post-detail-skeleton"
 
-// params를 Promise로 감싼 인터페이스 정의
 interface PostPageProps {
   params: Promise<{ blogId: string; postId: string }>;
 }
 
-// 비동기 함수로 변경하고 params를 await로 풀기
 export default async function PostPage({ params }: PostPageProps) {
-  const { blogId, postId } = await params; // Promise를 풀어서 실제 값 추출
+  const { blogId, postId } = await params;
   const blogIdNum = Number(blogId);
   const postIdNum = Number(postId);
 

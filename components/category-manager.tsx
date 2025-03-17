@@ -16,7 +16,6 @@ export function CategoryManager() {
   const [blog, setBlog] = useState<Blog | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  // editingCategoryId와 categoryId를 number | null로 사용
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null)
   const [categoryId, setCategoryId] = useState<number | null>(null)
   const [categoryName, setCategoryName] = useState("")
@@ -26,11 +25,8 @@ export function CategoryManager() {
   useEffect(() => {
     const loadBlogAndCategories = async () => {
       try {
-        // 블로그 정보 가져오기
         const blogData = await fetchmyBlog()
         setBlog(blogData)
-
-        // 블로그 ID를 기반으로 카테고리 가져오기
         const categoriesData = await fetchCategories(blogData.id)
         setCategories(categoriesData)
       } catch (error) {
@@ -53,9 +49,7 @@ export function CategoryManager() {
   
     try {
       const newCategory = await createCategory({ categoryname: categoryName })
-      // Option 1: 상태 업데이트
       setCategories((prev) => [...prev, newCategory])
-      // 또는 Option 2: 전체 카테고리 다시 불러오기
       const updatedCategories = await fetchCategories(blog.id)
       setCategories(updatedCategories)
   

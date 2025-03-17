@@ -22,19 +22,14 @@ export default function ProfilePage() {
     setIsLoading(true);
 
     try {
-      // API 호출로 사용자 이름 업데이트
       const updatedUser = await updateUser({ username: name });
 
-      // 상태 업데이트
       setUser((prevUser) => (prevUser ? { ...prevUser, username: updatedUser.username } : updatedUser));
 
-      // 성공 메시지 표시
       toast({
         title: "Profile updated",
         description: "Your profile has been successfully updated.",
       });
-
-      // 프로필 페이지 새로고침
       router.refresh();
     } catch (error) {
       console.error("Failed to update profile:", error);

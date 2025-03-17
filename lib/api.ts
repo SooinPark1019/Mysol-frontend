@@ -2,16 +2,13 @@ import type { Blog, Category, Post, User, PaginatedArticleListResponse } from "@
 
 const API_URL = "https://api.editorialhub.site/api/";
 
-/**
- * 공통 API 요청 함수
- */
-let isRefreshing = false; // 🔹 현재 refreshToken 요청 중인지 추적
+let isRefreshing = false; 
 
 async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {},
   authToken?: string,
-  retry = true // 🔹 재시도를 허용할지 여부
+  retry = true 
 ): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -32,7 +29,6 @@ async function apiRequest<T>(
 
     const refreshTokenStr = localStorage.getItem("refresh_token");
 
-    // refreshTokenStr가 있고, retry 가능, 그리고 현재 refresh 요청 중이 아니면 재발급 시도
     if (refreshTokenStr && retry && !isRefreshing) {
       isRefreshing = true;
       try {
@@ -41,21 +37,18 @@ async function apiRequest<T>(
         localStorage.setItem("refresh_token", refresh_token);
         isRefreshing = false;
 
-        // 새 토큰으로 원래 요청을 재시도 (이번엔 retry=false)
         return apiRequest<T>(endpoint, options, access_token, false);
 
       } catch (error) {
         console.error("Failed to refresh token:", error);
         isRefreshing = false;
 
-        // 🔹 Refresh Token도 만료되었거나 재발급 실패 → 토큰 제거
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
 
         throw new Error("Session expired. Please log in again.");
       }
     } else {
-      // refreshToken이 없거나, 이미 retry=false 등
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
       throw new Error("Session expired. Please log in again.");
@@ -84,9 +77,6 @@ function getAuthToken(): string {
   return authToken;
 }
 
-/**
- * 회원가입 요청
- */
 export async function signUp(data: { email: string; username: string; password: string }): Promise<User> {
   return apiRequest<User>("users/signup", {
     method: "POST",
@@ -94,9 +84,6 @@ export async function signUp(data: { email: string; username: string; password: 
   });
 }
 
-/**
- * 로그인 요청 (JWT 토큰 반환)
- */
 export async function login(data: { email: string; password: string }): Promise<{ access_token: string; refresh_token: string }> {
   const response = await apiRequest<{ access_token: string; refresh_token: string }>("users/signin", {
     method: "POST",
@@ -106,9 +93,6 @@ export async function login(data: { email: string; password: string }): Promise<
   return response;
 }
 
-/**
- * 로그아웃 요청 (refresh_token 필요)
- */
 export async function logout(refreshToken: string): Promise<{ message: string }> {
   return apiRequest<{ message: string }>("users/logout", {
     method: "POST",
@@ -116,14 +100,11 @@ export async function logout(refreshToken: string): Promise<{ message: string }>
   });
 }
 
-/**
- * 토큰 갱신 (refresh_token 필요)
- */
 export async function refreshToken(refreshToken: string): Promise<{ access_token: string; refresh_token: string }> {
   return apiRequest<{ access_token: string; refresh_token: string }>("users/refresh", {
     method: "POST",
     body: JSON.stringify({ refresh_token: refreshToken }),
-  }, undefined, false); // 🔹 Refresh 요청은 자체적으로 다시 refreshToken을 호출하지 않도록 함
+  }, undefined, false); 
 }
 
 export async function updateUser(data: {username: string}): Promise<User> {
@@ -134,9 +115,6 @@ export async function updateUser(data: {username: string}): Promise<User> {
     }, getAuthToken());
 }
 
-/**
- * 현재 사용자 정보 가져오기 (JWT 토큰 필요)
- */
 export async function getCurrentUser(): Promise<User> {
   return apiRequest<User>("users/me", {}, getAuthToken());
 }
